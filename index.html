@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agenda des interventions</title>
+  <style>
+    :root{
+      --bg:#0b0f14; --panel:#111823; --muted:#7a8aa1; --text:#e6edf6; --accent:#4cc2ff; --accent-2:#78e08f; --danger:#ff6b6b; --warn:#ffc048;
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;background:linear-gradient(180deg,#0a0f14,#0d141d);color:var(--text);font:14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial}
+    header{position:sticky;top:0;z-index:10;background:rgba(10,15,20,.8);backdrop-filter:saturate(140%) blur(10px);border-bottom:1px solid #17202e}
+    .wrap{max-width:1200px;margin:0 auto;padding:16px}
+    .brand{display:flex;gap:10px;align-items:center}
+    .brand h1{font-size:18px;margin:0;font-weight:700;letter-spacing:.2px}
+    .brand .dot{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 30% 30%, #8ee0ff, #4cc2ff)}
+    .toolbar{display:grid;grid-template-columns:1fr auto;gap:12px;margin-top:12px}
+    .filters{display:flex;flex-wrap:wrap;gap:8px}
+    .filters > * {min-width:150px}
+    .actions{display:flex;flex-wrap:wrap;gap:8px}
+    button,select,input[type="date"],input[type="time"],input[type="text"],input[type="file"],.btn{
+      background:#0f1622;color:var(--text);border:1px solid #1d2a3c;border-radius:12px;padding:10px 12px;outline:none
+    }
+    button:hover,.btn:hover{border-color:#2b3d57}
+    button.primary{background:linear-gradient(180deg,#1b283c,#142035);border-color:#274160}
+    button.ok{background:linear-gradient(180deg,#204231,#1a3527);border-color:#2d6444}
+    button.warn{background:linear-gradient(180deg,#3e310d,#2b2109);border-color:#6b5017}
+    button.danger{background:linear-gradient(180deg,#3d1515,#2a0e0e);border-color:#6a2323}
+    main{max-width:1200px;margin:18px auto;padding:0 16px 80px}
+    .cards{display:grid;grid-template-columns:1fr;gap:12px}
+    @media(min-width:860px){.cards{grid-template-columns:1fr 1fr}}
+    .card{background:linear-gradient(180deg,#0f1622,#0c121b);border:1px solid #1a2535;border-radius:var(--radius);padding:16px;box-shadow:0 4px 18px rgba(0,0,0,.25)}
+    .card h2{margin:0 0 12px 0;font-size:16px}
+    .pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;border:1px solid #203049;background:#0f1622;color:#bcd}
+    .list{width:100%;border-collapse:separate;border-spacing:0 8px}
+    .list th{font-weight:600;color:#9fbed6;text-align:left;padding:4px 8px}
+    .list td{background:#0f1622;border:1px solid #1b2940;border-left:none;border-right:none;padding:10px 10px}
+    .list tr{transition:transform .08s ease}
+    .list tr:hover{transform:translateY(-1px)}
+    .list .row{border-radius:10px;overflow:hidden}
+    .list .row td:first-child{border-left:1px solid #1b2940;border-top-left-radius:10px;border-bottom-left-radius:10px}
+    .list .row td:last-child{border-right:1px solid #1b2940;border-top-right-radius:10px;border-bottom-right-radius:10px}
+    .muted{color:var(--muted)}
+    .badge{padding:2px 8px;border-radius:999px;border:1px solid #274160;background:#0f1622;font-size:12px}
+    .badge.infra{border-color:#305f44}
+    .badge.rocade{border-color:#604a30}
+    .badge.audit{border-color:#2e4f7a}
+    .tag{font-size:11px;padding:2px 6px;border-radius:6px;border:1px solid #2b3d57;color:#a9c2db}
+    .tag.hno{border-color:#6b3e3e;color:#ffbdbd}
+
+    .flex{display:flex;gap:8px;align-items:center}
+    .right{margin-left:auto}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+
+    dialog{border:none;border-radius:18px;background:linear-gradient(180deg,#0e1520,#0a121a);color:var(--text);padding:0;max-width:640px;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+    dialog::backdrop{background:rgba(2,6,12,.6)}
+    .modal-head{padding:16px 18px;border-bottom:1px solid #1a2535}
+    .modal-body{padding:18px}
+    .modal-foot{padding:12px 18px;border-top:1px solid #1a2535;display:flex;gap:8px;justify-content:flex-end}
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field label{font-size:12px;color:#a9c2db}
+
+    .hint{font-size:12px;color:#9cb1c9}
+    .sep{height:1px;background:#162133;margin:10px 0}
+
+    .toast{position:fixed;right:14px;bottom:14px;background:#0f1622;color:#dfefff;border:1px solid #263652;border-radius:12px;padding:10px 12px;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <div class="brand"><span class="dot"></span><h1>Agenda des interventions</h1><span id="liveState" class="pill" title="État de la connexion Realtime">Realtime : <strong id="liveLabel">off</strong></span><span class="muted" style="margin-left:auto">TZ locale</span></div>
+      <div class="toolbar">
+        <div class="filters">
+          <input type="date" id="datePicker" />
+          <select id="techFilter"><option value="">Tous techniciens</option></select>
+          <select id="typeFilter"><option value="">Tous types</option></select>
+          <input type="text" id="searchInput" placeholder="Rechercher (site / ville / note)" />
+        </div>
+        <div class="actions">
+          <label class="btn" for="excelInput">📥 Importer Excel</label>
+          <input id="excelInput" type="file" accept=".xlsx,.xls" hidden />
+          <button id="btnAdd" class="primary">+ Ajouter</button>
+          <button id="btnExportCSV">Exporter CSV</button>
+          <button id="btnExportXLSX">Exporter XLSX</button>
+          <button id="btnExportICS">Exporter ICS</button>
+          <button id="btnSettings">Paramètres</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="cards">
+      <section class="card">
+        <h2 class="flex">Planning du <span id="dayLabel" class="badge">—</span><span class="right muted" id="countLabel"></span></h2>
+        <table class="list" id="eventsTable">
+          <thead>
+            <tr>
+              <th>Heure</th>
+              <th>Site / Ville</th>
+              <th>Type</th>
+              <th>Technicien</th>
+              <th>Infos</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="eventsBody"></tbody>
+        </table>
+      </section>
+
+      <section class="card">
+        <h2>Journal</h2>
+        <div id="log" class="muted" style="white-space:pre-wrap"></div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Modale ajout / édition -->
+  <dialog id="dlgEdit">
+    <form method="dialog">
+      <div class="modal-head"><strong id="dlgTitle">Nouvel événement</strong></div>
+      <div class="modal-body grid2">
+        <div class="field">
+          <label>Date</label>
+          <input type="date" id="f_date" required />
+        </div>
+        <div class="field">
+          <label>Heure (HH:mm)</label>
+          <input type="time" id="f_time" required />
+        </div>
+        <div class="field">
+          <label>Site / Ville</label>
+          <input type="text" id="f_site" required placeholder="Ex. Marie Blachère - Antananarivo" />
+        </div>
+        <div class="field">
+          <label>Type</label>
+          <input type="text" id="f_type" required placeholder="INFRA, ROCADE, AUDIT…" />
+        </div>
+        <div class="field">
+          <label>Technicien</label>
+          <input type="text" id="f_technicien" required />
+        </div>
+        <div class="field">
+          <label>HNO</label>
+          <select id="f_hno"><option value="false">Non</option><option value="true">Oui</option></select>
+        </div>
+        <div class="field" style="grid-column:1/-1">
+          <label>Notes</label>
+          <input type="text" id="f_notes" placeholder="Optionnel" />
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button id="btnDelete" class="danger" value="delete" style="display:none">Supprimer</button>
+        <span style="flex:1"></span>
+        <button value="cancel">Annuler</button>
+        <button id="btnSave" class="ok" value="default">Enregistrer</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Modale paramètres -->
+  <dialog id="dlgSettings">
+    <form method="dialog">
+      <div class="modal-head"><strong>Paramètres</strong></div>
+      <div class="modal-body">
+        <div class="grid3">
+          <div class="field">
+            <label>Année par défaut pour feuilles Excel (DDMM)</label>
+            <input type="number" id="s_year" value="2025" min="2020" max="2100" />
+          </div>
+          <div class="field">
+            <label>Durée par défaut (minutes) pour ICS</label>
+            <input type="number" id="s_dur" value="120" min="15" step="15" />
+          </div>
+          <div class="field">
+            <label>Exporter: inclure déjà exportés ?</label>
+            <select id="s_include_exported"><option value="false">Non</option><option value="true">Oui</option></select>
+          </div>
+        </div>
+        <div class="sep"></div>
+        <div class="grid4">
+          <div class="field">
+            <label>Mapping colonne 1</label>
+            <select id="map0"></select>
+          </div>
+          <div class="field">
+            <label>Mapping colonne 2</label>
+            <select id="map1"></select>
+          </div>
+          <div class="field">
+            <label>Mapping colonne 3</label>
+            <select id="map2"></select>
+          </div>
+          <div class="field">
+            <label>Mapping colonne 4</label>
+            <select id="map3"></select>
+          </div>
+        </div>
+        <p class="hint">Le mapping correspond, dans l'ordre des colonnes de l'Excel importé, à : <code>site</code>, <code>type</code>, <code>technicien</code>, <code>heure</code>. Ajuste si besoin (memorisé dans ton navigateur).</p>
+        <div class="sep"></div>
+        <div class="grid2">
+          <div class="field">
+            <label>Supabase URL</label>
+            <input type="text" id="s_supabase_url" placeholder="https://xxxx.supabase.co" />
+          </div>
+          <div class="field">
+            <label>Supabase Anon Key</label>
+            <input type="text" id="s_supabase_key" placeholder="eyJhbGciOi..." />
+          </div>
+        </div>
+        <p class="hint">Renseigne ton URL & clé publique anon. Elles sont stockées dans <em>localStorage</em> du navigateur.</p>
+      </div>
+      <div class="modal-foot">
+        <button value="cancel">Fermer</button>
+        <button id="btnSaveSettings" class="ok" value="default">Enregistrer</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" style="display:none"></div>
+
+  <!-- Dependencies -->
+  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+
+  <script>
+    // ======= UTIL =======
+    const $ = (s, root=document) => root.querySelector(s);
+    const $$ = (s, root=document) => [...root.querySelectorAll(s)];
+    const toast = (msg, ms=2500) => { const t=$('#toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none', ms) };
+    const pad = n => String(n).padStart(2,'0');
+
+    function fmtDateLabel(d){ return dayjs(d).format('dddd DD MMM YYYY'); }
+
+    function parseHour(raw){
+      if(!raw) return { time:"08:00", hno:false };
+      const s = String(raw).trim();
+      const hno = /HNO/i.test(s);
+      const t = s
+        .replace(/\(HNO\)/ig,'')
+        .replace(/h/ig,':')
+        .replace(/\s+/g,'')
+        .replace(/^(\d{1,2}):?(\d{0,2})$/, (m,h,mn)=> `${pad(h)}:${pad(mn||'00')}`);
+      // normalize edge cases like '9H30', '09H', '6H'
+      const m = t.match(/^(\d{1,2})(?::(\d{2}))?$/);
+      const hh = m ? pad(m[1]) : '08';
+      const mm = m && m[2] ? m[2] : '00';
+      return { time: `${hh}:${mm}`, hno };
+    }
+
+    async function sha1(text){
+      if(window.crypto?.subtle){
+        const enc = new TextEncoder().encode(text);
+        const buf = await crypto.subtle.digest('SHA-1', enc);
+        return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+      }
+      // Fallback quick hash (non-cryptographic)
+      let h=0; for(let i=0;i<text.length;i++){h=((h<<5)-h)+text.charCodeAt(i); h|=0}
+      return 'f'+(h>>>0).toString(16);
+    }
+
+    function downloadFile(name, mime, data){
+      const blob = new Blob([data], {type:mime});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+    }
+
+    // ======= STATE =======
+    const state = {
+      supa: null,
+      supaCreds: { url: '', key: '' },
+      settings: { year: 2025, icsDuration: 120, includeExported: false },
+      mapping: ['site','type','technicien','heure'],
+      currentDate: dayjs().format('YYYY-MM-DD'),
+      events: [],
+      editing: null,
+      options: { techs: new Set(), types: new Set() },
+    };
+
+    function loadPrefs(){
+      try{
+        const s = JSON.parse(localStorage.getItem('agenda_settings')||'{}');
+        Object.assign(state.settings, s);
+        const m = JSON.parse(localStorage.getItem('agenda_mapping')||'[]');
+        if(m.length===4) state.mapping = m;
+        const c = JSON.parse(localStorage.getItem('agenda_supabase')||'{}');
+        if(c.url && c.key){ state.supaCreds=c; initSupabase() }
+      }catch(e){}
+    }
+
+    function savePrefs(){
+      localStorage.setItem('agenda_settings', JSON.stringify(state.settings));
+      localStorage.setItem('agenda_mapping', JSON.stringify(state.mapping));
+      localStorage.setItem('agenda_supabase', JSON.stringify(state.supaCreds));
+      toast('Paramètres enregistrés');
+    }
+
+    function setLive(on){
+      $('#liveLabel').textContent = on? 'on' : 'off';
+      $('#liveState').style.borderColor = on? '#2b6f45' : '#203049';
+      $('#liveState').style.background = on? 'linear-gradient(180deg,#1d3c2a,#13271c)' : '#0f1622';
+    }
+
+    function guessBadges(type){
+      const t = (type||'').toLowerCase();
+      if(t.includes('infra')) return 'badge infra';
+      if(t.includes('rocade')) return 'badge rocade';
+      if(t.includes('audit')) return 'badge audit';
+      return 'badge';
+    }
+
+    function updateFilters(){
+      const techSel = $('#techFilter');
+      const typeSel = $('#typeFilter');
+      const techV = techSel.value, typeV = typeSel.value;
+      techSel.innerHTML = '<option value="">Tous techniciens</option>' +
+        Array.from(state.options.techs).sort().map(v=>`<option>${v}</option>`).join('');
+      typeSel.innerHTML = '<option value="">Tous types</option>' +
+        Array.from(state.options.types).sort().map(v=>`<option>${v}</option>`).join('');
+      techSel.value = techV; typeSel.value = typeV;
+    }
+
+    function render(){
+      $('#dayLabel').textContent = fmtDateLabel(state.currentDate);
+      const q = $('#searchInput').value.toLowerCase().trim();
+      const tf = $('#techFilter').value; const yf = $('#typeFilter').value;
+      const rows = state.events
+        .filter(e=>e.date===state.currentDate)
+        .filter(e=>!tf || e.technicien===tf)
+        .filter(e=>!yf || e.type===yf)
+        .filter(e=>!q || (e.site+e.type+e.technicien+(e.notes||'')).toLowerCase().includes(q))
+        .sort((a,b)=> (a.start_time||'').localeCompare(b.start_time||''));
+      const body = $('#eventsBody');
+      body.innerHTML = '';
+      rows.forEach(e=>{
+        const tr = document.createElement('tr'); tr.className='row';
+        tr.innerHTML = `
+          <td><strong>${e.start_time||''}</strong>${e.hno? ' <span class="tag hno">HNO</span>':''}</td>
+          <td>${escapeHtml(e.site||'')}</td>
+          <td><span class="${guessBadges(e.type)}">${escapeHtml(e.type||'')}</span></td>
+          <td>${escapeHtml(e.technicien||'')}</td>
+          <td class="muted">${escapeHtml(e.notes||'')}</td>
+          <td><button data-id="${e.id}" class="small">✏️</button></td>`;
+        body.appendChild(tr);
+      });
+      $('#countLabel').textContent = `${rows.length} intervention(s)`;
+      updateFilters();
+    }
+
+    function escapeHtml(s){
+      return String(s||'').replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+    }
+
+    // ======= SUPABASE =======
+    function initSupabase(){
+      try{
+        state.supa = window.supabase.createClient(state.supaCreds.url, state.supaCreds.key, { auth: { persistSession:false } });
+        subscribeRealtime();
+        refreshDay();
+      }catch(err){ console.error(err); toast("Supabase non initialisé"); }
+    }
+
+    function subscribeRealtime(){
+      if(!state.supa) return;
+      const ch = state.supa.channel('events-changes')
+        .on('postgres_changes', { event: '*', schema:'public', table:'events' }, payload => {
+          log(`Realtime: ${payload.eventType}`);
+          // naive refresh of current date only
+          refreshDay();
+        })
+        .subscribe((status)=>{ setLive(status==='SUBSCRIBED') });
+    }
+
+    async function upsertEvents(items){
+      if(!state.supa) throw new Error('Supabase non configuré');
+      const { data, error } = await state.supa.from('events').upsert(items, { onConflict:'event_uid' }).select();
+      if(error) throw error; return data;
+    }
+
+    async function deleteEvent(id){
+      const { error } = await state.supa.from('events').delete().eq('id', id);
+      if(error) throw error;
+    }
+
+    async function fetchDay(date){
+      if(!state.supa) return [];
+      const { data, error } = await state.supa
+        .from('events')
+        .select('*')
+        .eq('date', date)
+        .order('start_time', { ascending:true });
+      if(error) throw error; return data||[];
+    }
+
+    async function refreshDay(){
+      if(!state.supa) return;
+      const dayData = await fetchDay(state.currentDate);
+      mergeEvents(dayData);
+    }
+
+    function mergeEvents(list){
+      list.forEach(e=>{
+        state.options.techs.add(e.technicien||'');
+        state.options.types.add(e.type||'');
+      });
+      // replace items for that date
+      state.events = state.events.filter(e=>e.date!==state.currentDate).concat(list);
+      render();
+    }
+
+    async function markExported(ids){
+      if(!ids.length) return;
+      const { error } = await state.supa.from('events')
+        .update({ exported_flag: true, exported_at: new Date().toISOString() })
+        .in('id', ids);
+      if(error) throw error;
+    }
+
+    // ======= IMPORT EXCEL =======
+    function sheetNameToDate(name){
+      // expecting DDMM -> YYYY-MM-DD using default year
+      const s = String(name).trim();
+      const m = s.match(/^(\d{2})(\d{2})$/);
+      if(!m) return null;
+      const d = `${state.settings.year}-${m[2]}-${m[1]}`; // YYYY-MM-DD
+      return dayjs(d).isValid()? dayjs(d).format('YYYY-MM-DD') : null;
+    }
+
+    function parseRowsToEvents(rows, sheetDate){
+      const map = state.mapping; // order: col0..3 -> fields
+      const out=[];
+      rows.forEach(r=>{
+        if(!r) return; // null row
+        // pick only first 4 non-empty cells
+        let cells = r.filter(c=>c!==undefined && c!==null && String(c).trim()!=='');
+        if(cells.length===0) return;
+        while(cells.length<4) cells.push('');
+        const rec = { date: sheetDate, site:'', type:'', technicien:'', start_time:'', hno:false, notes:'' };
+        for(let i=0;i<4;i++){
+          const field = map[i]||['site','type','technicien','heure'][i];
+          const val = String(cells[i]??'').trim();
+          if(field==='heure'){
+            const {time,hno} = parseHour(val); rec.start_time=time; if(hno) rec.hno=true;
+          } else if(field in rec){
+            rec[field]=val;
+          }
+        }
+        if(!rec.site && !rec.type && !rec.technicien) return; // ignore empty-ish line
+        out.push(rec);
+      });
+      return out;
+    }
+
+    async function handleExcel(file){
+      const reader = new FileReader();
+      reader.onload = async (e)=>{
+        try{
+          const wb = XLSX.read(e.target.result, { type:'binary' });
+          const all = [];
+          for(const name of wb.SheetNames){
+            const d = sheetNameToDate(name);
+            if(!d) { log(`Feuille ignorée: ${name}`); continue; }
+            const ws = wb.Sheets[name];
+            const rows = XLSX.utils.sheet_to_json(ws, { header:1, raw:true });
+            const events = parseRowsToEvents(rows, d);
+            all.push(...events);
+          }
+          if(!all.length){ toast('Aucune donnée détectée. Vérifie les noms de feuilles (DDMM).'); return; }
+
+          // compute event_uid and upsert
+          for(const ev of all){
+            const uidBase = `${ev.date}|${(ev.site||'').toLowerCase().trim()}|${(ev.technicien||'').toLowerCase().trim()}|${ev.start_time||''}`;
+            ev.event_uid = await sha1(uidBase);
+          }
+          const saved = await upsertEvents(all);
+          toast(`Import terminé: ${saved.length} enregistrements (dédoublonnage actif)`);
+          // refresh current date view if included
+          if(all.some(x=>x.date===state.currentDate)) await refreshDay();
+        }catch(err){ console.error(err); toast('Erreur à l\'import: ' + (err.message||err)); }
+      };
+      reader.readAsBinaryString(file);
+    }
+
+    // ======= EXPORTS =======
+    async function collectForExport(){
+      if(!state.supa) throw new Error('Supabase non configuré');
+      const include = state.settings.includeExported;
+      const { data, error } = await state.supa.from('events').select('*').order('date', {ascending:true}).order('start_time', {ascending:true});
+      if(error) throw error;
+      return (data||[]).filter(e=> include || !e.exported_flag);
+    }
+
+    function toCSV(rows){
+      const header=['date','start_time','site','type','technicien','hno','notes'];
+      const lines = [header.join(';')];
+      rows.forEach(r=>{
+        const arr=[r.date,r.start_time||'',r.site||'',r.type||'',r.technicien||'',r.hno?1:0,r.notes||''];
+        lines.push(arr.map(v=>String(v).replace(/;/g,',')).join(';'));
+      });
+      return lines.join('\n');
+    }
+
+    function toICS(rows){
+      const NL='\r\n';
+      const dur = state.settings.icsDuration; // minutes
+      const now = dayjs().utc().format('YYYYMMDDTHHmmss[Z]');
+      let out = 'BEGIN:VCALENDAR'+NL+'VERSION:2.0'+NL+'PRODID:-//Agenda Interventions//FR//'+NL;
+      rows.forEach(r=>{
+        const dt = dayjs(r.date + 'T' + (r.start_time||'08:00'));
+        const dtstart = dt.format('YYYYMMDDTHHmmss');
+        const dtend = dt.add(dur,'minute').format('YYYYMMDDTHHmmss');
+        const uid = r.event_uid || (r.id? ('id-'+r.id) : Math.random().toString(36).slice(2));
+        const summary = `${r.type||'Intervention'} - ${r.site||''}`.trim();
+        const desc = `Tech: ${r.technicien||''}${r.hno?' (HNO)':''}${r.notes? '\n'+r.notes:''}`;
+        out += 'BEGIN:VEVENT'+NL+
+               'UID:'+uid+'@agenda-interventions'+NL+
+               'DTSTAMP:'+now+NL+
+               'DTSTART:'+dtstart+NL+
+               'DTEND:'+dtend+NL+
+               'SUMMARY:'+escapeICS(summary)+NL+
+               'DESCRIPTION:'+escapeICS(desc)+NL+
+               'END:VEVENT'+NL;
+      });
+      out += 'END:VCALENDAR'+NL;
+      return out;
+    }
+
+    function escapeICS(s){ return String(s||'').replace(/[\\;,\n]/g, m=> ({'\\':'\\\\',';':'\\;','\n':'\\n',',':'\\,'}[m]) || m ); }
+
+    async function exportCSV(){
+      const rows = await collectForExport();
+      if(!rows.length){ toast('Rien à exporter'); return; }
+      downloadFile('agenda.csv','text/csv;charset=utf-8', toCSV(rows));
+      await markExported(rows.map(r=>r.id).filter(Boolean));
+      toast('CSV exporté & marqué comme exporté');
+    }
+
+    async function exportXLSX(){
+      const rows = await collectForExport();
+      if(!rows.length){ toast('Rien à exporter'); return; }
+      const ws = XLSX.utils.json_to_sheet(rows.map(r=>({
+        date:r.date, heure:r.start_time||'', site:r.site||'', type:r.type||'', technicien:r.technicien||'', hno:r.hno?1:0, notes:r.notes||''
+      })));
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'agenda');
+      XLSX.writeFile(wb, 'agenda.xlsx');
+      await markExported(rows.map(r=>r.id).filter(Boolean));
+      toast('XLSX exporté & marqué comme exporté');
+    }
+
+    async function exportICS(){
+      const rows = await collectForExport();
+      if(!rows.length){ toast('Rien à exporter'); return; }
+      const ics = toICS(rows);
+      downloadFile('agenda.ics','text/calendar;charset=utf-8', ics);
+      await markExported(rows.map(r=>r.id).filter(Boolean));
+      toast('ICS exporté & marqué comme exporté');
+    }
+
+    // ======= UI HOOKS =======
+    function bindUI(){
+      $('#datePicker').value = state.currentDate;
+      $('#datePicker').addEventListener('change', async (e)=>{ state.currentDate = e.target.value; await refreshDay(); });
+      $('#techFilter').addEventListener('change', render);
+      $('#typeFilter').addEventListener('change', render);
+      $('#searchInput').addEventListener('input', render);
+      $('#excelInput').addEventListener('change', (e)=>{ const f=e.target.files[0]; if(f) handleExcel(f); e.target.value='' });
+      $('#btnAdd').addEventListener('click', ()=> openEditor());
+      $('#btnExportCSV').addEventListener('click', exportCSV);
+      $('#btnExportXLSX').addEventListener('click', exportXLSX);
+      $('#btnExportICS').addEventListener('click', exportICS);
+      $('#btnSettings').addEventListener('click', openSettings);
+      $('#eventsBody').addEventListener('click', (e)=>{
+        if(e.target.tagName==='BUTTON'){
+          const id = e.target.getAttribute('data-id');
+          const ev = state.events.find(x=>x.id===id);
+          if(ev) openEditor(ev);
+        }
+      });
+    }
+
+    function openEditor(ev){
+      state.editing = ev||null;
+      $('#dlgTitle').textContent = ev? 'Modifier' : 'Nouvel événement';
+      $('#btnDelete').style.display = ev? '' : 'none';
+      $('#f_date').value = ev? ev.date : state.currentDate;
+      $('#f_time').value = ev? (ev.start_time||'08:00') : '08:00';
+      $('#f_site').value = ev? (ev.site||'') : '';
+      $('#f_type').value = ev? (ev.type||'') : '';
+      $('#f_technicien').value = ev? (ev.technicien||'') : '';
+      $('#f_hno').value = ev && ev.hno ? 'true' : 'false';
+      $('#f_notes').value = ev? (ev.notes||'') : '';
+      $('#dlgEdit').showModal();
+    }
+
+    $('#dlgEdit')?.addEventListener('close', async (e)=>{
+      const action = $('#dlgEdit').returnValue;
+      if(action==='cancel') return;
+      if(action==='delete' && state.editing){
+        await deleteEvent(state.editing.id); toast('Supprimé'); await refreshDay(); return;
+      }
+      // save
+      const rec = {
+        date: $('#f_date').value,
+        start_time: $('#f_time').value,
+        site: $('#f_site').value.trim(),
+        type: $('#f_type').value.trim(),
+        technicien: $('#f_technicien').value.trim(),
+        hno: $('#f_hno').value==='true',
+        notes: $('#f_notes').value.trim()
+      };
+      rec.event_uid = await sha1(`${rec.date}|${rec.site.toLowerCase()}|${rec.technicien.toLowerCase()}|${rec.start_time}`);
+      if(state.editing && state.editing.id){ rec.id = state.editing.id; }
+      await upsertEvents([rec]); toast('Enregistré'); await refreshDay();
+    });
+
+    function fillSelect(sel, values){ sel.innerHTML = values.map(v=>`<option value="${v}">${v}</option>`).join(''); }
+
+    function openSettings(){
+      $('#s_year').value = state.settings.year;
+      $('#s_dur').value = state.settings.icsDuration;
+      $('#s_include_exported').value = String(state.settings.includeExported);
+      // mapping setup
+      const opts = ['(site)','site','type','technicien','heure'];
+      ['map0','map1','map2','map3'].forEach((id,i)=>{
+        const s = $('#'+id); s.innerHTML='';
+        opts.slice(1).forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; s.appendChild(o) });
+        s.value = state.mapping[i]||opts[1+i];
+      });
+      // supabase creds
+      $('#s_supabase_url').value = state.supaCreds.url||'';
+      $('#s_supabase_key').value = state.supaCreds.key||'';
+      $('#dlgSettings').showModal();
+    }
+
+    $('#dlgSettings')?.addEventListener('close', (e)=>{
+      if($('#dlgSettings').returnValue==='default'){
+        state.settings.year = parseInt($('#s_year').value||'2025',10);
+        state.settings.icsDuration = parseInt($('#s_dur').value||'120',10);
+        state.settings.includeExported = $('#s_include_exported').value==='true';
+        state.mapping = [$('#map0').value,$('#map1').value,$('#map2').value,$('#map3').value];
+        state.supaCreds = { url: $('#s_supabase_url').value.trim(), key: $('#s_supabase_key').value.trim() };
+        savePrefs();
+        if(state.supaCreds.url && state.supaCreds.key){ initSupabase(); }
+      }
+    });
+
+    function log(s){ const el=$('#log'); el.textContent = (dayjs().format('HH:mm:ss')+"  "+s+"\n") + el.textContent; }
+
+    // ======= BOOT =======
+    (function boot(){
+      loadPrefs();
+      bindUI();
+      $('#datePicker').value = state.currentDate;
+      render();
+      toast('Configure Supabase dans Paramètres puis importe ton Excel');
+    })();
+  </script>
+
+  <!--
+  =======================
+  SCRIPT SQL SUPABASE (à exécuter une fois)
+  =======================
+
+  create table if not exists public.events (
+    id uuid primary key default gen_random_uuid(),
+    event_uid text unique not null,
+    date date not null,
+    start_time time,
+    site text,
+    type text,
+    technicien text,
+    hno boolean default false,
+    notes text,
+    exported_flag boolean default false,
+    exported_at timestamptz,
+    created_at timestamptz default now(),
+    updated_at timestamptz default now()
+  );
+
+  -- trigger updated_at
+  create or replace function public.set_updated_at()
+  returns trigger as $$ begin new.updated_at = now(); return new; end; $$ language plpgsql;
+  drop trigger if exists trg_set_updated_at on public.events;
+  create trigger trg_set_updated_at before update on public.events for each row execute function public.set_updated_at();
+
+  -- RLS
+  alter table public.events enable row level security;
+
+  -- Lecture publique (optionnel)
+  create policy "events_read_all" on public.events for select using (true);
+
+  -- Écriture autorisée aux utilisateurs anon (si nécessaire) -> sinon restreindre
+  create policy "events_write_all" on public.events for insert with check (true);
+  create policy "events_update_all" on public.events for update using (true) with check (true);
+  create policy "events_delete_all" on public.events for delete using (true);
+
+  -- Realtime
+  -- Dans Supabase, activer Realtime sur le schéma public et la table events.
+
+  -->
+</body>
+</html>
