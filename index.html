@@ -99,8 +99,8 @@
           <label class="btn" for="excelInput">📥 Importer Excel</label>
           <input id="excelInput" type="file" accept=".xlsx,.xls" hidden />
           <button id="btnAdd" class="primary">+ Ajouter</button>
+          <button id="btnExport">Exporter XLS</button>
           <button id="btnSettings">Paramètres</button>
-          <!-- (Exports retirés) -->
         </div>
       </div>
     </div>
@@ -377,6 +377,55 @@
     </form>
   </dialog>
 
+  <!-- Modale Export XLS -->
+  <dialog id="dlgExport">
+    <form method="dialog">
+      <div class="modal-head"><strong>Exporter XLS</strong></div>
+      <div class="modal-body">
+        <div class="grid2">
+          <div class="field">
+            <label>Date début</label>
+            <input type="date" id="exp_start" />
+          </div>
+          <div class="field">
+            <label>Date fin</label>
+            <input type="date" id="exp_end" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Type d'intervention</label>
+          <select id="exp_type">
+            <option value="">Tous</option>
+            <option value="travaux">Travaux</option>
+            <option value="audit">Audit</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Sous-type travaux</label>
+          <select id="exp_sub_travaux">
+            <option value="">Tous</option>
+            <option value="rocade">Rocade</option>
+            <option value="lien">Lien</option>
+            <option value="rocade_lien">Rocade et Lien</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Type baie</label>
+          <select id="exp_baie">
+            <option value="">Tous</option>
+            <option value="baie_lien">Baie et Lien</option>
+            <option value="baie_lien_rocade_isole">Baie Lien Rocade (isolé)</option>
+            <option value="baie_lien_rocade_mitoyen">Baie Lien Rocade (mitoyen)</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button value="cancel">Annuler</button>
+        <button class="ok" value="export">Exporter</button>
+      </div>
+    </form>
+  </dialog>
+
   <div id="toast" class="toast" style="display:none"></div>
 
   <!-- Dependencies -->
@@ -426,6 +475,13 @@
       navigator.clipboard.writeText(el.value || el.textContent || '')
         .then(()=> toast('Copié'))
         .catch(()=> toast('Impossible de copier'));
+    }
+
+    function s2ab(s) {
+      const buf = new ArrayBuffer(s.length);
+      const view = new Uint8Array(buf);
+      for (let i=0; i<s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+      return buf;
     }
 
     function downloadFile(name, mime, data){
@@ -574,6 +630,16 @@
         .select('*')
         .eq('date', date)
         .order('start_time', { ascending:true });
+      if(error) throw error; return data||[];
+    }
+
+    async function fetchRange(start, end){
+      if(!state.supa) return [];
+      let query = state.supa.from('events').select('*');
+      if(start) query = query.gte('date', start);
+      if(end) query = query.lte('date', end);
+      query = query.order('date', { ascending: true }).order('start_time', { ascending: true });
+      const { data, error } = await query;
       if(error) throw error; return data||[];
     }
 
@@ -895,6 +961,71 @@ Otonia Jonathan 01 88 61 35 79`;
       $('#m_body_rdv').value = buildRDVBody(site, date, time, techName, techPhone);
     }
 
+    // ======= EXPORT XLS =======
+    function openExportDialog(){
+      $('#exp_start').value = state.currentDate;
+      $('#exp_end').value = state.currentDate;
+      $('#exp_type').value = '';
+      $('#exp_sub_travaux').value = '';
+      $('#exp_baie').value = '';
+      $('#dlgExport').showModal();
+    }
+
+    async function handleExport(){
+      const start = $('#exp_start').value;
+      const end = $('#exp_end').value;
+      const mainType = $('#exp_type').value;
+      const subTravaux = $('#exp_sub_travaux').value;
+      const baieType = $('#exp_baie').value;
+
+      if(!state.supa) { toast('Supabase non configuré'); return; }
+
+      const data = await fetchRange(start, end);
+
+      let filtered = data;
+
+      if(mainType){
+        const kw = mainType === 'travaux' ? ['travaux', 'infra', 'rocade', 'lien', 'baie'] : ['audit'];
+        filtered = filtered.filter(e => kw.some(k => normalize(e.type || '').includes(k)));
+      }
+
+      if(subTravaux && mainType === 'travaux'){
+        if(subTravaux === 'rocade'){
+          filtered = filtered.filter(e => normalize(e.type || '').includes('rocade') && !normalize(e.type || '').includes('lien'));
+        } else if(subTravaux === 'lien'){
+          filtered = filtered.filter(e => normalize(e.type || '').includes('lien') && !normalize(e.type || '').includes('rocade'));
+        } else if(subTravaux === 'rocade_lien'){
+          filtered = filtered.filter(e => normalize(e.type || '').includes('rocade') && normalize(e.type || '').includes('lien'));
+        }
+      }
+
+      if(baieType){
+        if(baieType === 'baie_lien'){
+          filtered = filtered.filter(e => normalize(e.type || '').includes('baie') && normalize(e.type || '').includes('lien') && !normalize(e.type || '').includes('rocade'));
+        } else if(baieType === 'baie_lien_rocade_isole'){
+          filtered = filtered.filter(e => normalize(e.type || '').includes('baie') && normalize(e.type || '').includes('lien') && normalize(e.type || '').includes('rocade') && normalize(e.type || '').includes('isole'));
+        } else if(baieType === 'baie_lien_rocade_mitoyen'){
+          filtered = filtered.filter(e => normalize(e.type || '').includes('baie') && normalize(e.type || '').includes('lien') && normalize(e.type || '').includes('rocade') && normalize(e.type || '').includes('mitoyen'));
+        }
+      }
+
+      const rows = filtered.map(e => ({
+        Date: toMailDate(e.date),
+        Heure: e.start_time || '',
+        'Type de travaux': e.type || '',
+        'Nom du tech': e.technicien || ''
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Interventions");
+
+      const bin = XLSX.write(wb, {bookType:'xlsx', type:'binary'});
+      downloadFile(`export_inters_${start || 'debut'}_${end || 'fin'}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', s2ab(bin));
+
+      toast(`Exporté ${rows.length} interventions`);
+    }
+
     // ======= UI HOOKS =======
     function bindUI(){
       $('#datePicker').value = state.currentDate;
@@ -904,6 +1035,7 @@ Otonia Jonathan 01 88 61 35 79`;
       $('#searchInput').addEventListener('input', render);
       $('#excelInput').addEventListener('change', (e)=>{ const f=e.target.files[0]; if(f) handleExcel(f); e.target.value='' });
       $('#btnAdd').addEventListener('click', ()=> openEditor());
+      $('#btnExport').addEventListener('click', openExportDialog);
       $('#btnSettings').addEventListener('click', openSettings);
       $('#eventsBody').addEventListener('click', (e)=>{
         const btn = e.target.closest('button'); if(!btn) return;
@@ -946,21 +1078,6 @@ Otonia Jonathan 01 88 61 35 79`;
       $('#copy_body_rdv').addEventListener('click', ()=> copyText('#m_body_rdv'));
     }
 
-    function openEditor(ev){
-      state.editing = ev||null;
-      $('#dlgTitle').textContent = ev? 'Modifier' : 'Nouvel événement';
-      $('#btnDelete').style.display = ev? '' : 'none';
-      $('#f_ticket').value = ev? (ev.ticket||'') : '';
-      $('#f_date').value = ev? ev.date : state.currentDate;
-      $('#f_time').value = ev? (ev.start_time||'08:00') : '08:00';
-      $('#f_site').value = ev? (ev.site||'') : '';
-      $('#f_type').value = ev? (ev.type||'') : '';
-      $('#f_technicien').value = ev? (ev.technicien||'') : '';
-      $('#f_hno').value = ev && ev.hno ? 'true' : 'false';
-      $('#f_notes').value = ev? (ev.notes||'') : '';
-      $('#dlgEdit').showModal();
-    }
-
     $('#dlgEdit')?.addEventListener('close', async (e)=>{
       const action = $('#dlgEdit').returnValue;
       if(action==='cancel') return;
@@ -980,6 +1097,12 @@ Otonia Jonathan 01 88 61 35 79`;
       rec.event_uid = await sha1(`${rec.date}|${rec.ticket.toLowerCase()}|${rec.site.toLowerCase()}|${rec.technicien.toLowerCase()}|${rec.start_time}`);
       if(state.editing && state.editing.id){ rec.id = state.editing.id; }
       await upsertEvents([rec]); toast('Enregistré'); await refreshDay();
+    });
+
+    $('#dlgExport')?.addEventListener('close', async (e)=>{
+      if($('#dlgExport').returnValue === 'export'){
+        await handleExport();
+      }
     });
 
     function openSettings(){
@@ -1066,4 +1189,3 @@ Otonia Jonathan 01 88 61 35 79`;
   -->
 </body>
 </html>
-
