@@ -1025,6 +1025,29 @@ Otonia Jonathan 01 88 61 35 79`;
 
       toast(`Exporté ${rows.length} interventions`);
     }
+<script>
+// ======= EDITOR (Ajouter / Modifier) =======
+function openEditor(ev = null){
+  state.editing = ev || null;
+
+  // Titre & bouton supprimer
+  $('#dlgTitle').textContent = ev ? 'Modifier l’événement' : 'Nouvel événement';
+  $('#btnDelete').style.display = (ev && ev.id) ? 'inline-flex' : 'none';
+
+  // Pré-remplissage des champs
+  $('#f_ticket').value      = ev?.ticket       ?? '';
+  $('#f_date').value        = ev?.date         ?? state.currentDate;
+  $('#f_time').value        = ev?.start_time   ?? '';
+  $('#f_site').value        = ev?.site         ?? '';
+  $('#f_type').value        = ev?.type         ?? '';
+  $('#f_technicien').value  = ev?.technicien   ?? '';
+  $('#f_hno').value         = String(ev?.hno ?? false);
+  $('#f_notes').value       = ev?.notes        ?? '';
+
+  // Ouvre la modale
+  $('#dlgEdit').showModal();
+}
+</script>
 
     // ======= UI HOOKS =======
     function bindUI(){
@@ -1189,3 +1212,4 @@ Otonia Jonathan 01 88 61 35 79`;
   -->
 </body>
 </html>
+
