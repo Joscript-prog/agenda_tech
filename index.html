@@ -3,12 +3,15 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Agenda des interventions + Planification</title>
+  <title>Agenda des interventions</title>
   <style>
-    :root{ --bg:#0b0f14; --panel:#111823; --muted:#7a8aa1; --text:#e6edf6; --accent:#4cc2ff; --accent-2:#78e08f; --danger:#ff6b6b; --warn:#ffc048; --radius:16px }
+    :root{
+      --bg:#0b0f14; --panel:#111823; --muted:#7a8aa1; --text:#e6edf6; --accent:#4cc2ff; --accent-2:#78e08f; --danger:#ff6b6b; --warn:#ffc048;
+      --radius:16px;
+    }
     *{box-sizing:border-box}
     html,body{height:100%}
-    body{margin:0;background:linear-gradient(180deg,#0a0f14,#0d141d);color:var(--text);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
+    body{margin:0;background:linear-gradient(180deg,#0a0f14,#0d141d);color:var(--text);font:14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial}
     header{position:sticky;top:0;z-index:10;background:rgba(10,15,20,.8);backdrop-filter:saturate(140%) blur(10px);border-bottom:1px solid #17202e}
     .wrap{max-width:1200px;margin:0 auto;padding:16px}
     .brand{display:flex;gap:10px;align-items:center}
@@ -47,30 +50,38 @@
     .badge.audit{border-color:#2e4f7a}
     .tag{font-size:11px;padding:2px 6px;border-radius:6px;border:1px solid #2b3d57;color:#a9c2db}
     .tag.hno{border-color:#6b3e3e;color:#ffbdbd}
+
     .flex{display:flex;gap:8px;align-items:center}
     .right{margin-left:auto}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
     .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-    dialog{border:none;border-radius:18px;background:linear-gradient(180deg,#0e1520,#0a121a);color:var(--text);padding:0;max-width:840px;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+
+    dialog{border:none;border-radius:18px;background:linear-gradient(180deg,#0e1520,#0a121a);color:var(--text);padding:0;max-width:760px;box-shadow:0 20px 60px rgba(0,0,0,.45)}
     dialog::backdrop{background:rgba(2,6,12,.6)}
     .modal-head{padding:16px 18px;border-bottom:1px solid #1a2535;display:flex;gap:8px;align-items:center}
     .modal-body{padding:18px}
     .modal-foot{padding:12px 18px;border-top:1px solid #1a2535;display:flex;gap:8px;justify-content:flex-end}
     .field{display:flex;flex-direction:column;gap:6px}
     .field label{font-size:12px;color:#a9c2db}
+
     .hint{font-size:12px;color:#9cb1c9}
     .sep{height:1px;background:#162133;margin:10px 0}
+
+    .tabs{display:flex;gap:6px}
+    .tab{padding:8px 10px;border:1px solid #203049;border-radius:999px;cursor:pointer}
+    .tab.active{border-color:#2b6f45;background:linear-gradient(180deg,#1d3c2a,#13271c)}
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    textarea{min-height:84px;resize:vertical}
+
     .typeahead{position:relative}
     .typeahead-list{position:absolute;left:0;right:0;top:calc(100% + 6px);background:#0f1622;border:1px solid #263652;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.35);max-height:220px;overflow:auto;z-index:50}
     .typeahead-item{padding:8px 10px;cursor:pointer}
     .typeahead-item:hover,.typeahead-item.active{background:#142033}
+
     .toast{position:fixed;right:14px;bottom:14px;background:#0f1622;color:#dfefff;border:1px solid #263652;border-radius:12px;padding:10px 12px;box-shadow:0 10px 30px rgba(0,0,0,.3)}
     .small{padding:6px 8px;border-radius:10px}
-    /* planification list */
-    .mini-list{display:flex;flex-direction:column;gap:8px;max-height:240px;overflow:auto;border:1px solid #203049;border-radius:12px;padding:8px;background:#0f1622}
-    .mini-item{display:flex;gap:8px;align-items:center;justify-content:space-between;border:1px solid #1b2940;padding:8px;border-radius:10px}
-    .pill-sel{display:inline-flex;gap:6px;align-items:center;border:1px solid #274160;border-radius:999px;padding:4px 8px}
   </style>
 </head>
 <body>
@@ -87,7 +98,6 @@
         <div class="actions">
           <label class="btn" for="excelInput">📥 Importer Excel</label>
           <input id="excelInput" type="file" accept=".xlsx,.xls" hidden />
-          <button id="btnPlanif" class="primary">🗺️ Planification</button>
           <button id="btnAdd" class="primary">+ Ajouter</button>
           <button id="btnExport">Exporter XLS</button>
           <button id="btnSettings">Paramètres</button>
@@ -123,77 +133,241 @@
     </div>
   </main>
 
-  <!-- Modale Planification -->
-  <dialog id="dlgPlanif">
+  <!-- Modale ajout / édition -->
+  <dialog id="dlgEdit">
     <form method="dialog">
-      <div class="modal-head"><strong>Planification (département → technicien → ville → type)</strong></div>
+      <div class="modal-head"><strong id="dlgTitle">Nouvel événement</strong></div>
+      <div class="modal-body grid2">
+        <div class="field">
+          <label>Ticket</label>
+          <input type="text" id="f_ticket" placeholder="Numéro du ticket" />
+        </div>
+        <div class="field">
+          <label>Date</label>
+          <input type="date" id="f_date" required />
+        </div>
+        <div class="field">
+          <label>Heure (HH:mm)</label>
+          <input type="time" id="f_time" required />
+        </div>
+        <div class="field">
+          <label>Site / Ville</label>
+          <input type="text" id="f_site" required placeholder="Ex. 4001 MARIE BLACHERE VALENCE CASINO - BBG" />
+        </div>
+        <div class="field">
+          <label>Type</label>
+          <input type="text" id="f_type" required placeholder="INFRA, ROCADE, AUDIT…" />
+        </div>
+        <div class="field">
+          <label>Technicien</label>
+          <input type="text" id="f_technicien" />
+        </div>
+        <div class="field">
+          <label>HNO</label>
+          <select id="f_hno"><option value="false">Non</option><option value="true">Oui</option></select>
+        </div>
+        <div class="field" style="grid-column:1/-1">
+          <label>Notes</label>
+          <input type="text" id="f_notes" placeholder="Optionnel" />
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button id="btnDelete" class="danger" value="delete" style="display:none">Supprimer</button>
+        <span style="flex:1"></span>
+        <button value="cancel">Annuler</button>
+        <button id="btnSave" class="ok" value="default">Enregistrer</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Modale paramètres (inclut Import Annuaire techniciens) -->
+  <dialog id="dlgSettings">
+    <form method="dialog">
+      <div class="modal-head"><strong>Paramètres</strong></div>
       <div class="modal-body">
         <div class="grid3">
           <div class="field">
-            <label>Département (2 chiffres)</label>
-            <input type="text" id="p_dept" placeholder="ex. 13" maxlength="3" />
+            <label>Année par défaut pour feuilles Excel (DDMM)</label>
+            <input type="number" id="s_year" value="2025" min="2020" max="2100" />
           </div>
           <div class="field">
-            <label>&nbsp;</label>
-            <button type="button" id="p_search" class="primary">Rechercher techniciens</button>
+            <label>Durée par défaut (minutes) pour ICS</label>
+            <input type="number" id="s_dur" value="120" min="15" step="15" />
           </div>
           <div class="field">
-            <label>Techniciens trouvés</label>
-            <div id="p_found_count" class="pill" style="width:max-content">0</div>
+            <label>Exporter: inclure déjà exportés ?</label>
+            <select id="s_include_exported"><option value="false">Non</option><option value="true">Oui</option></select>
+          </div>
+        </div>
+        <div class="sep"></div>
+        <div class="grid4">
+          <div class="field">
+            <label>Mapping colonne 1</label>
+            <select id="map0"></select>
+          </div>
+          <div class="field">
+            <label>Mapping colonne 2</label>
+            <select id="map1"></select>
+          </div>
+          <div class="field">
+            <label>Mapping colonne 3</label>
+            <select id="map2"></select>
+          </div>
+          <div class="field">
+            <label>Mapping colonne 4</label>
+            <select id="map3"></select>
+          </div>
+          <div class="field">
+            <label>Mapping colonne 5</label>
+            <select id="map4"></select>
+          </div>
+        </div>
+        <p class="hint">Le mapping correspond, dans l'ordre des colonnes de l'Excel importé, à : <code>ticket</code>, <code>site</code>, <code>type</code>, <code>technicien</code>, <code>heure</code>.</p>
+
+        <div class="sep"></div>
+        <h3 class="muted" style="margin:8px 0 2px">Annuaire techniciens</h3>
+        <div class="grid3">
+          <div class="field">
+            <label>Importer annuaire (Excel)</label>
+            <input type="file" id="s_tech_excel" accept=".xlsx,.xls" />
+          </div>
+          <div class="field">
+            <label>Techs importés</label>
+            <input type="text" id="s_tech_count" disabled placeholder="0" />
+          </div>
+          <div class="field">
+            <label>Effacer annuaire</label>
+            <button id="s_tech_clear" type="button" class="danger">Vider</button>
+          </div>
+        </div>
+        <p class="hint">Colonnes attendues (ou équivalentes) : <code>Nom</code>, <code>Prénom</code>, <code>Cp</code>, <code>Ville</code>, <code>Gsm</code>, <code>Tél</code>, <code>Email</code>. Le numéro affiché privilégie <em>Gsm</em>, sinon <em>Tél</em>.</p>
+        <div class="sep"></div>
+
+        <div class="grid2">
+          <div class="field">
+            <label>Supabase URL</label>
+            <input type="text" id="s_supabase_url" placeholder="https://xxxx.supabase.co" />
+          </div>
+          <div class="field">
+            <label>Supabase Anon Key</label>
+            <input type="text" id="s_supabase_key" placeholder="eyJ..." />
+          </div>
+        </div>
+        <p class="hint">URL & clé publique anon sont stockées dans <em>localStorage</em>.</p>
+      </div>
+      <div class="modal-foot">
+        <button value="cancel">Fermer</button>
+        <button id="btnSaveSettings" class="ok" value="default">Enregistrer</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Modale Générateur d'e-mail -->
+  <dialog id="dlgMail">
+    <form method="dialog">
+      <div class="modal-head">
+        <strong>Générer un e-mail</strong>
+        <span class="tabs">
+          <span class="tab active" data-tab="mission">Missionnement</span>
+          <span class="tab" data-tab="rdv">Confirmation RDV</span>
+        </span>
+      </div>
+      <div class="modal-body">
+        <div class="three-col">
+          <div class="field">
+            <label>Ticket</label>
+            <input type="text" id="m_ticket" readonly />
+          </div>
+          <div class="field">
+            <label>Date (JJ/MM/AAAA)</label>
+            <input type="text" id="m_date" />
+          </div>
+          <div class="field">
+            <label>Heure (HH:mm)</label>
+            <input type="text" id="m_time" />
+          </div>
+        </div>
+        <div class="grid2" style="margin-top:10px">
+          <div class="field">
+            <label>Nom du site (raison sociale)</label>
+            <input type="text" id="m_site" placeholder="4001 MARIE BLACHERE VALENCE CASINO - BBG" />
+          </div>
+          <div class="field">
+            <label>Adresse du site</label>
+            <input type="text" id="m_address" placeholder="Adresse complète" />
+          </div>
+        </div>
+        <div class="three-col" style="margin-top:10px">
+          <div class="field">
+            <label>Catégorie</label>
+            <input type="text" id="m_category" readonly />
+          </div>
+          <div class="field">
+            <label>Durée (minutes) — 120=2h, 240=4h</label>
+            <input type="number" id="m_duration" min="15" step="15" />
+          </div>
+          <div class="field">
+            <label>Afficher Tarifs (admin)</label>
+            <select id="m_showTarif"><option value="false">Non</option><option value="true">Oui</option></select>
           </div>
         </div>
 
         <div class="grid2" style="margin-top:10px">
-          <div class="field">
-            <label>Technicien</label>
-            <select id="p_tech"></select>
+          <div class="field typeahead">
+            <label>Technicien (saisie progressive)</label>
+            <input type="text" id="m_tech_input" placeholder="Tape un prénom/nom (ex. lam…)" autocomplete="off" />
+            <div id="m_tech_list" class="typeahead-list" style="display:none"></div>
           </div>
           <div class="field">
-            <label>Ville</label>
-            <input type="text" id="p_city" placeholder="Ville de l'intervention" />
-          </div>
-        </div>
-
-        <div class="field" style="margin-top:10px">
-          <label>Type d'intervention</label>
-          <div class="grid3">
-            <label class="pill-sel"><input type="radio" name="p_type" value="Audit site isolé" checked> Audit site isolé</label>
-            <label class="pill-sel"><input type="radio" name="p_type" value="Audit site mitoyen"> Audit site mitoyen</label>
-            <label class="pill-sel"><input type="radio" name="p_type" value="Travaux rocade"> Travaux rocade</label>
-            <label class="pill-sel"><input type="radio" name="p_type" value="Travaux lien"> Travaux lien</label>
-            <label class="pill-sel"><input type="radio" name="p_type" value="Travaux rocade et lien"> Travaux rocade et lien</label>
-            <label class="pill-sel"><input type="radio" name="p_type" value="Autres"> Autres</label>
+            <label>Téléphone technicien</label>
+            <input type="text" id="m_tech_phone" placeholder="Auto depuis annuaire" />
           </div>
         </div>
 
-        <div class="grid3" style="margin-top:10px">
-          <div class="field">
-            <label>Note (optionnel)</label>
-            <input type="text" id="p_note" placeholder="Ex. contraintes, accès, HNO…" />
-          </div>
-          <div class="field">
-            <label>&nbsp;</label>
-            <button type="button" id="p_save" class="ok">Enregistrer</button>
-          </div>
-          <div class="field">
-            <label>&nbsp;</label>
-            <button type="button" id="p_clear_form">Effacer le formulaire</button>
+        <div id="mission_fields" style="margin-top:10px">
+          <div class="two-col">
+            <div class="field">
+              <label>Descriptif de l'intervention</label>
+              <textarea id="m_desc" placeholder="À coller ici"></textarea>
+            </div>
+            <div class="field">
+              <label>Informations techniques</label>
+              <textarea id="m_infos" placeholder="À coller ici"></textarea>
+            </div>
           </div>
         </div>
 
         <div class="sep"></div>
-        <div class="grid2">
+
+        <!-- Prévisualisation -->
+        <div id="tab_mission">
           <div class="field">
-            <label>Brouillon du technicien sélectionné</label>
-            <div id="p_queue" class="mini-list"></div>
+            <label><strong>Objet (Missionnement)</strong></label>
+            <input type="text" id="m_subject_mission" readonly />
           </div>
           <div class="field">
-            <label>Actions</label>
-            <div class="flex" style="flex-wrap:wrap;gap:8px">
-              <button type="button" id="p_export" class="primary">Exporter interventions (XLS)</button>
-              <button type="button" id="p_flush" class="danger">Vider la liste</button>
-            </div>
-            <p class="hint" style="margin-top:8px">L'export contient : Ville, Département, Technicien, Type, Note. Les dates/heures seront à compléter selon le planning du technicien.</p>
+            <label><strong>Corps</strong></label>
+            <textarea id="m_body_mission" readonly></textarea>
+          </div>
+          <div class="flex">
+            <button type="button" id="copy_subject_mission" class="ok">Copier l’objet</button>
+            <button type="button" id="copy_body_mission" class="ok">Copier le corps</button>
+            <span class="right muted">Le bloc <em>Logistique</em> n’apparaît que pour les Travaux de Rocade.</span>
+          </div>
+        </div>
+
+        <div id="tab_rdv" style="display:none">
+          <div class="field">
+            <label><strong>Objet (Confirmation RDV)</strong></label>
+            <input type="text" id="m_subject_rdv" readonly />
+          </div>
+          <div class="field">
+            <label><strong>Corps</strong></label>
+            <textarea id="m_body_rdv" readonly></textarea>
+          </div>
+          <div class="flex">
+            <button type="button" id="copy_subject_rdv" class="ok">Copier l’objet</button>
+            <button type="button" id="copy_body_rdv" class="ok">Copier le corps</button>
           </div>
         </div>
       </div>
@@ -203,11 +377,54 @@
     </form>
   </dialog>
 
-  <!-- Modales d'origine (Édition / Paramètres / Mail / Export) -->
-  <!-- === Copie intégrale des dialogues d'origine non modifiés par souci de compacité === -->
-  <!-- >>> Pour simplifier l'exemple, les boîtes de dialogue initiales sont omises ici.
-       Intégrez ce fichier à la place de votre HTML actuel, OU copiez/collez uniquement les ajouts
-       (bouton 🗺️ Planification, <dialog id="dlgPlanif">, et le JS associé) dans votre fichier existant. -->
+  <!-- Modale Export XLS -->
+  <dialog id="dlgExport">
+    <form method="dialog">
+      <div class="modal-head"><strong>Exporter XLS</strong></div>
+      <div class="modal-body">
+        <div class="grid2">
+          <div class="field">
+            <label>Date début</label>
+            <input type="date" id="exp_start" />
+          </div>
+          <div class="field">
+            <label>Date fin</label>
+            <input type="date" id="exp_end" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Type d'intervention</label>
+          <select id="exp_type">
+            <option value="">Tous</option>
+            <option value="travaux">Travaux</option>
+            <option value="audit">Audit</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Sous-type travaux</label>
+          <select id="exp_sub_travaux">
+            <option value="">Tous</option>
+            <option value="rocade">Rocade</option>
+            <option value="lien">Lien</option>
+            <option value="rocade_lien">Rocade et Lien</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Type baie</label>
+          <select id="exp_baie">
+            <option value="">Tous</option>
+            <option value="baie_lien">Baie et Lien</option>
+            <option value="baie_lien_rocade_isole">Baie Lien Rocade (isolé)</option>
+            <option value="baie_lien_rocade_mitoyen">Baie Lien Rocade (mitoyen)</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button value="cancel">Annuler</button>
+        <button class="ok" value="export">Exporter</button>
+      </div>
+    </form>
+  </dialog>
 
   <div id="toast" class="toast" style="display:none"></div>
 
@@ -224,134 +441,774 @@
     const pad = n => String(n).padStart(2,'0');
     const normalize = s => String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim();
 
-    function downloadFile(name, mime, data){ const blob=new Blob([data],{type:mime}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000); }
-    function s2ab(s){ const buf=new ArrayBuffer(s.length); const view=new Uint8Array(buf); for(let i=0;i<s.length;i++) view[i]=s.charCodeAt(i)&0xFF; return buf; }
+    function fmtDateLabel(d){ return dayjs(d).format('dddd DD MMM YYYY'); }
+    const toMailDate = iso => dayjs(iso).format('DD/MM/YYYY');
 
-    // ======= STATE (reprend l'essentiel + planification) =======
+    function parseHour(raw){
+      if(!raw) return { time:"08:00", hno:false };
+      const s = String(raw).trim();
+      const hno = /HNO/i.test(s);
+      const t = s
+        .replace(/\(HNO\)/ig,'')
+        .replace(/h/ig,':')
+        .replace(/\s+/g,'')
+        .replace(/^(\d{1,2}):?(\d{0,2})$/, (m,h,mn)=> `${pad(h)}:${pad(mn||'00')}`);
+      const m = t.match(/^(\d{1,2})(?::(\d{2}))?$/);
+      const hh = m ? pad(m[1]) : '08';
+      const mm = m && m[2] ? m[2] : '00';
+      return { time: `${hh}:${mm}`, hno };
+    }
+
+    async function sha1(text){
+      if(window.crypto?.subtle){
+        const enc = new TextEncoder().encode(text);
+        const buf = await crypto.subtle.digest('SHA-1', enc);
+        return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+      }
+      let h=0; for(let i=0;i<text.length;i++){h=((h<<5)-h)+text.charCodeAt(i); h|=0}
+      return 'f'+(h>>>0).toString(16);
+    }
+
+    function copyText(id){
+      const el = $(id);
+      if(!el) return;
+      navigator.clipboard.writeText(el.value || el.textContent || '')
+        .then(()=> toast('Copié'))
+        .catch(()=> toast('Impossible de copier'));
+    }
+
+    function s2ab(s) {
+      const buf = new ArrayBuffer(s.length);
+      const view = new Uint8Array(buf);
+      for (let i=0; i<s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+      return buf;
+    }
+
+    function downloadFile(name, mime, data){
+      const blob = new Blob([data], {type:mime});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+    }
+
+    // ======= STATE =======
     const state = {
-      techDirectory: JSON.parse(localStorage.getItem('agenda_tech_directory')||'[]'),
-      planifQueue: JSON.parse(localStorage.getItem('planif_queue')||'{}'), // { techName: [ {dept, city, type, note, ts} ] }
+      supa: null,
+      supaCreds: { url: '', key: '' },
+      settings: { year: 2025, icsDuration: 120, includeExported: false },
+      mapping: ['ticket','site','type','technicien','heure'], // import Excel interventions
+      currentDate: dayjs().format('YYYY-MM-DD'),
+      events: [],
+      editing: null,
+      options: { techs: new Set(), types: new Set() },
+      // Annuaire techniciens (localStorage)
+      techDirectory: [],   // [{firstName,lastName,cp,ville,gsm,tel,email,displayName,phoneDisplay}]
     };
 
-    // ======= Annuaire: support colonne «Departements» =======
-    // Si votre import existant ne stocke pas encore departements, vous pouvez pousser
-    // un tableau t.departements = ['13','84'] dans chaque entrée et le sauvegarder à part :
-    function setTechDirectory(dir){ state.techDirectory = dir; localStorage.setItem('agenda_tech_directory', JSON.stringify(dir)); }
-
-    function saveQueue(){ localStorage.setItem('planif_queue', JSON.stringify(state.planifQueue)); }
-
-    // ======= PLANIFICATION UI =======
-    function openPlanif(){
-      // reset compteur
-      $('#p_found_count').textContent = '0';
-      buildTechSelect([]);
-      $('#p_city').value=''; $('#p_note').value='';
-      $('#dlgPlanif').showModal();
-    }
-
-    function buildTechSelect(list){
-      const sel = $('#p_tech'); sel.innerHTML='';
-      if(!list || !list.length){ sel.innerHTML='<option value="">—</option>'; return; }
-      list.forEach(t=>{
-        const o=document.createElement('option');
-        o.value=t.displayName; o.textContent=t.displayName + (t.ville? ' · '+t.ville : '');
-        sel.appendChild(o);
-      });
-      renderQueueFor(sel.value);
-    }
-
-    function searchTechsByDept(deptRaw){
-      const d = (deptRaw||'').trim();
-      if(!/^\d{2,3}$/.test(d)) { toast('Département invalide'); return []; }
-      // Chaque technicien doit avoir t.departements = ['13','84', ...]
-      const list = (state.techDirectory||[]).filter(t=> Array.isArray(t.departements) && t.departements.some(x=> String(x).padStart(2,'0')===String(d).padStart(2,'0')));
-      $('#p_found_count').textContent = String(list.length);
-      return list.sort((a,b)=> (a.lastName||'').localeCompare(b.lastName||''));
-    }
-
-    function addPlanned(){
-      const dept = $('#p_dept').value.trim();
-      const tech = $('#p_tech').value.trim();
-      const city = $('#p_city').value.trim();
-      const type = (document.querySelector('input[name="p_type"]:checked')||{}).value || 'Autres';
-      const note = $('#p_note').value.trim();
-      if(!/^\d{2,3}$/.test(dept)) return toast('Département invalide');
-      if(!tech) return toast('Choisis un technicien');
-      if(!city) return toast('Renseigne la ville');
-      const rec = { dept: dept.padStart(2,'0'), city, type, note, tech, ts: Date.now() };
-
-      if(!state.planifQueue[tech]) state.planifQueue[tech]=[];
-      state.planifQueue[tech].push(rec); saveQueue();
-      toast('Ajouté au brouillon');
-      renderQueueFor(tech);
-      // on vide juste ville/note pour enchaîner
-      $('#p_city').value=''; $('#p_note').value=''; $('#p_city').focus();
-    }
-
-    function renderQueueFor(tech){
-      const cont = $('#p_queue'); cont.innerHTML='';
-      const arr = state.planifQueue[tech]||[];
-      if(!arr.length){ cont.innerHTML = '<div class="muted">Aucune intervention en brouillon pour ce technicien.</div>'; return; }
-      arr.forEach((r,idx)=>{
-        const el=document.createElement('div'); el.className='mini-item';
-        el.innerHTML = `<div><strong>${r.city}</strong> (dep ${r.dept}) • <span class="muted">${r.type}</span>${r.note? ' — '+r.note:''}</div>
-                        <div class="flex"><button data-i="${idx}" class="small" data-act="del">🗑️</button></div>`;
-        cont.appendChild(el);
-      });
-      cont.addEventListener('click', (e)=>{
-        const b=e.target.closest('button'); if(!b) return; const i=+b.getAttribute('data-i');
-        if(b.getAttribute('data-act')==='del'){ state.planifQueue[tech].splice(i,1); saveQueue(); renderQueueFor(tech); }
-      }, { once:true });
-    }
-
-    function exportForTech(tech){
-      const arr = state.planifQueue[tech]||[]; if(!arr.length) return toast('Rien à exporter');
-      const rows = arr.map(r=> ({ Ville:r.city, Departement:r.dept, Technicien:r.tech, Type:r.type, Note:r.note }));
-      const ws = XLSX.utils.json_to_sheet(rows);
-      const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Planif');
-      const bin = XLSX.write(wb, {bookType:'xlsx', type:'binary'});
-      downloadFile(`planif_${normalize(tech).replace(/\s+/g,'_')}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', s2ab(bin));
-    }
-
-    // Sauvegarde dans Firebase si dispo, sinon localStorage (déjà fait via queue)
-    async function persistOne(rec){
+    // ======= PREFERENCES =======
+    function loadPrefs(){
       try{
-        const fb = window.firebase; // supposé déjà chargé dans votre contexte
-        if(fb?.apps?.length && fb.firestore){
-          const db = fb.firestore();
-          await db.collection('planification').add({
-            technicien: rec.tech,
-            departement: rec.dept,
-            ville: rec.city,
-            type: rec.type,
-            note: rec.note || '',
-            created_at: new Date(rec.ts || Date.now())
-          });
-          toast('Enregistré dans Firebase');
-        } else {
-          // Fallback: déjà conservé dans planifQueue (localStorage)
-          toast('Enregistré (local) — Firebase non détecté');
-        }
-      }catch(e){ console.error(e); toast('Erreur enregistrement'); }
+        const s = JSON.parse(localStorage.getItem('agenda_settings')||'{}');
+        Object.assign(state.settings, s);
+        const m = JSON.parse(localStorage.getItem('agenda_mapping')||'[]');
+        if(m.length===5) state.mapping = m;
+        const c = JSON.parse(localStorage.getItem('agenda_supabase')||'{}');
+        if(c.url && c.key){ state.supaCreds=c; initSupabase() }
+        const dir = JSON.parse(localStorage.getItem('agenda_tech_directory')||'[]');
+        state.techDirectory = Array.isArray(dir)? dir : [];
+      }catch(e){}
     }
 
-    // ======= HOOKS =======
-    $('#btnPlanif')?.addEventListener('click', openPlanif);
-    $('#p_search')?.addEventListener('click', ()=>{ const lst=searchTechsByDept($('#p_dept').value); buildTechSelect(lst); });
-    $('#p_tech')?.addEventListener('change', e=> renderQueueFor(e.target.value));
-    $('#p_save')?.addEventListener('click', async ()=>{ const tech=$('#p_tech').value; addPlanned(); const arr=state.planifQueue[tech]; if(arr && arr.length) await persistOne(arr[arr.length-1]); });
-    $('#p_export')?.addEventListener('click', ()=>{ const tech=$('#p_tech').value; if(!tech) return toast('Choisis un technicien'); exportForTech(tech); });
-    $('#p_flush')?.addEventListener('click', ()=>{ const tech=$('#p_tech').value; if(!tech) return toast('Choisis un technicien'); state.planifQueue[tech]=[]; saveQueue(); renderQueueFor(tech); toast('Liste vidée'); });
-    $('#p_clear_form')?.addEventListener('click', ()=>{ $('#p_city').value=''; $('#p_note').value=''; $('#p_city').focus(); });
+    function savePrefs(){
+      localStorage.setItem('agenda_settings', JSON.stringify(state.settings));
+      localStorage.setItem('agenda_mapping', JSON.stringify(state.mapping));
+      localStorage.setItem('agenda_supabase', JSON.stringify(state.supaCreds));
+      toast('Paramètres enregistrés');
+    }
 
-    // ======= Exemple d'extension d'import annuaire pour ajouter «Departements» =======
-    // Si vous avez déjà une fonction importTechExcel ailleurs, ajoutez-y quelque chose comme :
-    // map.depts = find(['departements','départements','dept','depts','secteur','secteurs']);
-    // const depts = String(r[map.depts]||'').replace(/[^0-9,; ]/g,'').split(/[;,\s]+/).filter(Boolean).map(x=>x.padStart(2,'0'));
-    // out.push({ ... , departements: depts })
+    // ======= UI CORE =======
+    function setLive(on){
+      $('#liveLabel').textContent = on? 'on' : 'off';
+      $('#liveState').style.borderColor = on? '#2b6f45' : '#203049';
+      $('#liveState').style.background = on? 'linear-gradient(180deg,#1d3c2a,#13271c)' : '#0f1622';
+    }
 
-    // Boot minimal (journal)
-    (function boot(){ toast('Planification prête : bouton 🗺️ en haut à droite'); })();
+    function guessBadges(type){
+      const t = (type||'').toLowerCase();
+      if(t.includes('infra')) return 'badge infra';
+      if(t.includes('rocade')) return 'badge rocade';
+      if(t.includes('audit')) return 'badge audit';
+      return 'badge';
+    }
+
+    function updateFilters(){
+      const techSel = $('#techFilter');
+      const typeSel = $('#typeFilter');
+      const techV = techSel.value, typeV = typeSel.value;
+      techSel.innerHTML = '<option value="">Tous techniciens</option>' +
+        Array.from(state.options.techs).filter(Boolean).sort().map(v=>`<option>${v}</option>`).join('');
+      typeSel.innerHTML = '<option value="">Tous types</option>' +
+        Array.from(state.options.types).filter(Boolean).sort().map(v=>`<option>${v}</option>`).join('');
+      techSel.value = techV; typeSel.value = typeV;
+    }
+
+    function render(){
+      $('#dayLabel').textContent = fmtDateLabel(state.currentDate);
+      const q = $('#searchInput').value.toLowerCase().trim();
+      const tf = $('#techFilter').value; const yf = $('#typeFilter').value;
+      const rows = state.events
+        .filter(e=>e.date===state.currentDate)
+        .filter(e=>!tf || e.technicien===tf)
+        .filter(e=>!yf || e.type===yf)
+        .filter(e=>!q || (String(e.ticket||'')+e.site+e.type+e.technicien+(e.notes||'')).toLowerCase().includes(q))
+        .sort((a,b)=> (a.start_time||'').localeCompare(b.start_time||''));
+      const body = $('#eventsBody');
+      body.innerHTML = '';
+      rows.forEach(e=>{
+        const tr = document.createElement('tr'); tr.className='row';
+        tr.innerHTML = `
+          <td>${escapeHtml(e.ticket||'')}</td>
+          <td><strong>${e.start_time||''}</strong>${e.hno? ' <span class="tag hno">HNO</span>':''}</td>
+          <td>${escapeHtml(e.site||'')}</td>
+          <td><span class="${guessBadges(e.type)}">${escapeHtml(e.type||'')}</span></td>
+          <td>${escapeHtml(e.technicien||'')}</td>
+          <td class="muted">${escapeHtml(e.notes||'')}</td>
+          <td>
+            <button data-id="${e.id}" data-act="edit" class="small">✏️</button>
+            <button data-id="${e.id}" data-act="mail" class="small">✉️</button>
+          </td>`;
+        body.appendChild(tr);
+      });
+      $('#countLabel').textContent = `${rows.length} intervention(s)`;
+      updateFilters();
+    }
+
+    function escapeHtml(s){
+  return String(s||'').replace(/[&<>"']/g, c => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  }[c]));
+}
+
+    // ======= SUPABASE =======
+    function initSupabase(){
+      try{
+        state.supa = window.supabase.createClient(state.supaCreds.url, state.supaCreds.key, { auth: { persistSession:false } });
+        subscribeRealtime();
+        refreshDay();
+      }catch(err){ console.error(err); toast("Supabase non initialisé"); }
+    }
+
+    function subscribeRealtime(){
+      if(!state.supa) return;
+      state.supa.channel('events-changes')
+        .on('postgres_changes', { event: '*', schema:'public', table:'events' }, payload => {
+          log(`Realtime: ${payload.eventType}`);
+          refreshDay();
+        })
+        .subscribe((status)=>{ setLive(status==='SUBSCRIBED') });
+    }
+
+    async function upsertEvents(items){
+      if(!state.supa) throw new Error('Supabase non configuré');
+      const { data, error } = await state.supa.from('events').upsert(items, { onConflict:'event_uid' }).select();
+      if(error) throw error; return data;
+    }
+
+    async function deleteEvent(id){
+      const { error } = await state.supa.from('events').delete().eq('id', id);
+      if(error) throw error;
+    }
+
+    async function fetchDay(date){
+      if(!state.supa) return [];
+      const { data, error } = await state.supa
+        .from('events')
+        .select('*')
+        .eq('date', date)
+        .order('start_time', { ascending:true });
+      if(error) throw error; return data||[];
+    }
+
+    async function fetchRange(start, end){
+      if(!state.supa) return [];
+      let query = state.supa.from('events').select('*');
+      if(start) query = query.gte('date', start);
+      if(end) query = query.lte('date', end);
+      query = query.order('date', { ascending: true }).order('start_time', { ascending: true });
+      const { data, error } = await query;
+      if(error) throw error; return data||[];
+    }
+
+    async function refreshDay(){
+      if(!state.supa) return;
+      const dayData = await fetchDay(state.currentDate);
+      mergeEvents(dayData);
+    }
+
+    function mergeEvents(list){
+      list.forEach(e=>{
+        if(e?.technicien) state.options.techs.add(e.technicien);
+        if(e?.type) state.options.types.add(e.type);
+      });
+      state.events = state.events.filter(e=>e.date!==state.currentDate).concat(list);
+      render();
+    }
+
+    // ======= IMPORT EXCEL (Interventions) =======
+    function sheetNameToDate(name){
+      const s = String(name).trim();
+      const m = s.match(/^(\d{2})(\d{2})$/);
+      if(!m) return null;
+      const d = `${state.settings.year}-${m[2]}-${m[1]}`;
+      return dayjs(d).isValid()? dayjs(d).format('YYYY-MM-DD') : null;
+    }
+
+    function parseRowsToEvents(rows, sheetDate){
+      const map = state.mapping; // [ticket, site, type, technicien, heure]
+      const out=[];
+      rows.forEach(r=>{
+        if(!r) return;
+        let cells = r.filter(c=>c!==undefined && c!==null && String(c).trim()!=='');
+        if(cells.length===0) return;
+        while(cells.length<5) cells.push('');
+        const rec = { date: sheetDate, ticket:'', site:'', type:'', technicien:'', start_time:'', hno:false, notes:'' };
+        const defaults = ['ticket','site','type','technicien','heure'];
+        for(let i=0;i<5;i++){
+          const field = map[i]||defaults[i];
+          const val = String(cells[i]??'').trim();
+          if(field==='heure'){
+            const {time,hno} = parseHour(val); rec.start_time=time; if(hno) rec.hno=true;
+          } else if(field==='ticket'){ rec.ticket = val; }
+          else if(field in rec){ rec[field]=val; }
+        }
+        if(!rec.ticket && !rec.site && !rec.type && !rec.technicien) return;
+        out.push(rec);
+      });
+      return out;
+    }
+
+    async function handleExcel(file){
+      const reader = new FileReader();
+      reader.onload = async (e)=>{
+        try{
+          const wb = XLSX.read(e.target.result, { type:'binary' });
+          const all = [];
+          for(const name of wb.SheetNames){
+            const d = sheetNameToDate(name);
+            if(!d) { log(`Feuille ignorée: ${name}`); continue; }
+            const ws = wb.Sheets[name];
+            const rows = XLSX.utils.sheet_to_json(ws, { header:1, raw:true });
+            const events = parseRowsToEvents(rows, d);
+            all.push(...events);
+          }
+          if(!all.length){ toast('Aucune donnée détectée. Vérifie les noms de feuilles (DDMM).'); return; }
+
+          for(const ev of all){
+            const uidBase = `${ev.date}|${(ev.ticket||'').toLowerCase().trim()}|${(ev.site||'').toLowerCase().trim()}|${(ev.technicien||'').toLowerCase().trim()}|${ev.start_time||''}`;
+            ev.event_uid = await sha1(uidBase);
+          }
+          const saved = await upsertEvents(all);
+          toast(`Import terminé: ${saved.length} enregistrements`);
+          if(all.some(x=>x.date===state.currentDate)) await refreshDay();
+        }catch(err){ console.error(err); toast('Erreur à l\'import: ' + (err.message||err)); }
+      };
+      reader.readAsBinaryString(file);
+    }
+
+    // ======= ANNURAIRE TECHS (Excel -> localStorage) =======
+    function normalizePhone(s){
+      const raw = String(s||'').trim();
+      if(!raw) return '';
+      return raw.replace(/[^\d+]/g,''); // simple clean, conserve + si présent
+    }
+
+    function autoMapTechHeaders(rowObj){
+      // essaie d'associer les colonnes par nom, tolérant accents/variantes
+      const map = {};
+      const keys = Object.keys(rowObj||{});
+      const nkeys = keys.map(k=>({k, n: normalize(k)}));
+      function find(preds){ return (nkeys.find(({n})=> preds.some(p=> n.includes(p)))||{}).k }
+      map.nom    = find(['nom']);
+      map.prenom = find(['prenom','prénom','first','given']);
+      map.cp     = find(['cp','code postal','codepostal']);
+      map.ville  = find(['ville','city']);
+      map.gsm    = find(['gsm','mobile','portable','cell']);
+      map.tel    = find(['tel','tél','telephone','phone']);
+      map.email  = find(['email','courriel','mail']);
+      return map;
+    }
+
+    function importTechExcel(file){
+      const reader = new FileReader();
+      reader.onload = (e)=>{
+        try{
+          const wb = XLSX.read(e.target.result, { type:'binary' });
+          const ws = wb.Sheets[wb.SheetNames[0]];
+          const rows = XLSX.utils.sheet_to_json(ws, { defval:'' }); // objets avec en-têtes
+          if(!rows.length){ toast('Annuaire vide'); return; }
+          const map = autoMapTechHeaders(rows[0]);
+          const out=[];
+          for(const r of rows){
+            const firstName = String(r[map.prenom]||'').trim();
+            const lastName  = String(r[map.nom]||'').trim();
+            const cp        = String(r[map.cp]||'').trim();
+            const ville     = String(r[map.ville]||'').trim();
+            const gsm       = String(r[map.gsm]||'').trim();
+            const tel       = String(r[map.tel]||'').trim();
+            const email     = String(r[map.email]||'').trim();
+            if(!(firstName||lastName)) continue;
+            const phonePref = gsm || tel;
+            out.push({
+              firstName,lastName,cp,ville,gsm,tel,email,
+              displayName: (firstName+' '+lastName).trim(),
+              phoneDisplay: phonePref,
+              _n_name: normalize(firstName+' '+lastName),
+            });
+          }
+          state.techDirectory = out;
+          localStorage.setItem('agenda_tech_directory', JSON.stringify(out));
+          $('#s_tech_count').value = String(out.length);
+          toast(`Annuaire chargé: ${out.length} technicien(s)`);
+        }catch(err){ console.error(err); toast('Erreur import annuaire: '+(err.message||err)); }
+      };
+      reader.readAsBinaryString(file);
+    }
+
+    function filterTechs(query, limit=8){
+      const q = normalize(query);
+      if(!q) return [];
+      const tokens = q.split(' ').filter(Boolean);
+      const scored = [];
+      for(const t of state.techDirectory){
+        let ok = true, score = 0;
+        for(const tok of tokens){
+          const idx = t._n_name.indexOf(tok);
+          if(idx===-1){ ok=false; break; }
+          score += 100 - Math.min(idx, 99);
+        }
+        if(ok) scored.push({t, score});
+      }
+      scored.sort((a,b)=> b.score - a.score || a.t.displayName.length - b.t.displayName.length);
+      return scored.slice(0,limit).map(s=>s.t);
+    }
+
+    // ======= MAIL GENERATOR =======
+    function openMailGenerator(ev){
+      // Pré-remplissages
+      $('#m_ticket').value = ev.ticket || '';
+      $('#m_site').value = ev.site || '';
+      $('#m_address').value = '';
+      $('#m_date').value = toMailDate(ev.date);
+      $('#m_time').value = ev.start_time || '';
+      const cat = inferCategory(ev.type);
+      $('#m_category').value = cat;
+      $('#m_duration').value = (cat==='Audit') ? 120 : 240; // 2h / 4h par défaut
+      $('#m_showTarif').value = 'false';
+      $('#m_tech_input').value = ev.technicien || '';
+      $('#m_tech_phone').value = ''; // tente auto si annuaire match exact
+      if(ev.technicien){
+        const cand = filterTechs(ev.technicien,1)[0];
+        if(cand){ $('#m_tech_phone').value = cand.phoneDisplay; }
+      }
+      $('#m_desc').value = '';
+      $('#m_infos').value = '';
+
+      // tab par défaut
+      switchTab('mission');
+      rebuildMails();
+      $('#dlgMail').showModal();
+    }
+
+    function switchTab(name){
+      $$('.tab').forEach(t=> t.classList.toggle('active', t.getAttribute('data-tab')===name));
+      $('#tab_mission').style.display = (name==='mission')?'block':'none';
+      $('#tab_rdv').style.display     = (name==='rdv')?'block':'none';
+    }
+
+    function inferCategory(type){
+      const t = normalize(type);
+      if(t.includes('audit')) return 'Audit';
+      if(t.includes('infra') || t.includes('rocade')) return 'Travaux';
+      return 'Travaux';
+    }
+
+    function hasRocade(type){
+      return normalize(type).includes('rocade');
+    }
+
+    function mmToHHMM(mm){
+      const m = Math.max(parseInt(mm||0,10),0);
+      const h = Math.floor(m/60), r = m%60;
+      return `${pad(h)}h${pad(r)}`;
+    }
+
+    function formatTicketForSubject(t){
+      const s = String(t||'').trim();
+      if(!s) return 'N° TICKET D4';
+      return /^\s*n°/i.test(s) ? s : `N° ${s}`;
+    }
+
+    function buildMissionnementSubject(site, ticket){
+      return `OBJET MAIL : MISSIONNEMENT PROJET MARIE BLACHERE - ${formatTicketForSubject(ticket)} - ${site||'NOM SITE'}`;
+    }
+
+    function buildMissionnementBody(data){
+      const {
+        category, date, time, durationMin, showTarif, address, site,
+        desc, infos, typeRaw
+      } = data;
+      const tarifLine = showTarif ? `Tarif : xxx€ + xxx€ de frais (à communiquer seulement lorsque le mail est envoyé au responsable administratif car ces techniciens ne doivent pas avoir connaissance du tarif convenu)\n` : '';
+      const logBloc = (category==='Travaux' && hasRocade(typeRaw)) ? (
+`A mentionner seulement si Travaux : 
+Logistique : 
+Nous t'avons expédié des équipements à installer lors de la réalisation des travaux.
+Les informations d'expédition sont disponibles dans ton ticket MOBILITY 4.
+Attention, les colis ne restent que 7 jours calendaires au point relais.
+
+`
+      ) : '';
+
+return `Bonjour,
+
+Comme convenu ensemble, nous te missionnons sur le projet MARIE BLACHERE pour l'intervention suivante : 
+
+Informations générales : 
+Nature de l'intervention : ${category}
+Date d'intervention : ${date}
+Heure d'intervention : ${time}
+Durée : ${mmToHHMM(durationMin)}
+${tarifLine}Adresse du site : ${address||'XXXXXX'}
+Nom du site : ${site||'XXXXXX'}
+
+Contacts : 
+
+Bugbusters : 
+• Jonathan OTONIA : 01 88 61 35 79
+• Laura GIRALDO : 06 60 81 71 55
+• Jean-Michel SANTIAGO : 06 37 43 08 48 
+
+Marie BLACHERE : 04 90 26 26 68 (à appeler en cas de retard)
+
+Informations techniques : 
+
+Descriptif de l'intervention
+${desc||''}
+
+Informations techniques
+${infos||''}
+
+Les documents techniques sont disponibles dans le ticket de l'intervention.
+
+Rapport intervention : 
+• Rédiger le rapport d'intervention sur KIZEO avec photos horodatées
+• Rédiger le rapport d'intervention sur MOBILITY 4
+
+Informations importantes : 
+• Les retards d'arrivée sur site doivent faire l'objet d'une alerte immédiate auprès de Jonathan ou Jean-Michel
+• Toute difficulté rencontrée sur site doit être communiquée à Jonathan ou Jean-Michel
+
+${logBloc}Nous restons disponibles si tu as la moindre question,
+
+En te remerciant,
+
+Otonia Jonathan  
+01 88 61 35 79`;
+    }
+
+    function buildRDVSubject(site){
+      return `OBJET DU MAIL : RDV AUDIT DE BAIE BOUYGUES TELECOM - ${site||'[NOM DU SITE]'}`;
+    }
+
+    function buildRDVBody(site, date, time, techName, techPhone){
+      const who = techName ? `${techName}${techPhone? ' '+techPhone : ''}` : '[Nom Prénom + Téléphone]';
+      return `Bonjour,
+Pour le site ${site||'[NOM DU SITE]'}, je peux vous proposer le ${date||'[Date]'} à ${time||'[Heure]'} avec le technicien ${who}.
+Je vous remercie par avance pour votre retour.
+Cordialement,
+Otonia Jonathan 01 88 61 35 79`;
+    }
+
+    function rebuildMails(){
+      const site = $('#m_site').value.trim();
+      const ticket = $('#m_ticket').value.trim();
+      const address = $('#m_address').value.trim();
+      const date = $('#m_date').value.trim();
+      const time = $('#m_time').value.trim();
+      const category = $('#m_category').value.trim() || 'Travaux';
+      const durationMin = parseInt($('#m_duration').value|| (category==='Audit'?120:240),10);
+      const showTarif = $('#m_showTarif').value==='true';
+      const desc = $('#m_desc').value;
+      const infos = $('#m_infos').value;
+      const techName = $('#m_tech_input').value.trim();
+      const techPhone = $('#m_tech_phone').value.trim();
+
+      // On tente de récupérer le type brut de l'event courant (si possible)
+      const ev = window._mail_ev || {};
+      const typeRaw = ev.type || '';
+
+      // Missionnement
+      $('#m_subject_mission').value = buildMissionnementSubject(site, ticket);
+      $('#m_body_mission').value = buildMissionnementBody({
+        category, date, time, durationMin, showTarif, address, site, desc, infos, typeRaw
+      });
+
+      // Confirmation RDV
+      $('#m_subject_rdv').value = buildRDVSubject(site);
+      $('#m_body_rdv').value = buildRDVBody(site, date, time, techName, techPhone);
+    }
+
+    // ======= EXPORT XLS =======
+    function openExportDialog(){
+      $('#exp_start').value = state.currentDate;
+      $('#exp_end').value = state.currentDate;
+      $('#exp_type').value = '';
+      $('#exp_sub_travaux').value = '';
+      $('#exp_baie').value = '';
+      $('#dlgExport').showModal();
+    }
+
+    async function handleExport(){
+      const start = $('#exp_start').value;
+      const end = $('#exp_end').value;
+      const mainType = $('#exp_type').value;
+      const subTravaux = $('#exp_sub_travaux').value;
+      const baieType = $('#exp_baie').value;
+
+      if(!state.supa) { toast('Supabase non configuré'); return; }
+
+      const data = await fetchRange(start, end);
+
+      let filtered = data;
+
+      if(mainType){
+        const kw = mainType === 'travaux' ? ['travaux', 'infra', 'rocade', 'lien', 'baie'] : ['audit'];
+        filtered = filtered.filter(e => kw.some(k => normalize(e.type || '').includes(k)));
+      }
+
+      if(subTravaux && mainType === 'travaux'){
+        if(subTravaux === 'rocade'){
+          filtered = filtered.filter(e => normalize(e.type || '').includes('rocade') && !normalize(e.type || '').includes('lien'));
+        } else if(subTravaux === 'lien'){
+          filtered = filtered.filter(e => normalize(e.type || '').includes('lien') && !normalize(e.type || '').includes('rocade'));
+        } else if(subTravaux === 'rocade_lien'){
+          filtered = filtered.filter(e => normalize(e.type || '').includes('rocade') && normalize(e.type || '').includes('lien'));
+        }
+      }
+
+      if(baieType){
+        if(baieType === 'baie_lien'){
+          filtered = filtered.filter(e => normalize(e.type || '').includes('baie') && normalize(e.type || '').includes('lien') && !normalize(e.type || '').includes('rocade'));
+        } else if(baieType === 'baie_lien_rocade_isole'){
+          filtered = filtered.filter(e => normalize(e.type || '').includes('baie') && normalize(e.type || '').includes('lien') && normalize(e.type || '').includes('rocade') && normalize(e.type || '').includes('isole'));
+        } else if(baieType === 'baie_lien_rocade_mitoyen'){
+          filtered = filtered.filter(e => normalize(e.type || '').includes('baie') && normalize(e.type || '').includes('lien') && normalize(e.type || '').includes('rocade') && normalize(e.type || '').includes('mitoyen'));
+        }
+      }
+
+      const rows = filtered.map(e => ({
+        Date: toMailDate(e.date),
+        Heure: e.start_time || '',
+        'Type de travaux': e.type || '',
+        'Nom du tech': e.technicien || ''
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Interventions");
+
+      const bin = XLSX.write(wb, {bookType:'xlsx', type:'binary'});
+      downloadFile(`export_inters_${start || 'debut'}_${end || 'fin'}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', s2ab(bin));
+
+      toast(`Exporté ${rows.length} interventions`);
+    }
+
+// ======= EDITOR (Ajouter / Modifier) =======
+function openEditor(ev = null){
+  state.editing = ev || null;
+
+  // Titre & bouton supprimer
+  $('#dlgTitle').textContent = ev ? 'Modifier l’événement' : 'Nouvel événement';
+  $('#btnDelete').style.display = (ev && ev.id) ? 'inline-flex' : 'none';
+
+  // Pré-remplissage des champs
+  $('#f_ticket').value      = ev?.ticket       ?? '';
+  $('#f_date').value        = ev?.date         ?? state.currentDate;
+  $('#f_time').value        = ev?.start_time   ?? '';
+  $('#f_site').value        = ev?.site         ?? '';
+  $('#f_type').value        = ev?.type         ?? '';
+  $('#f_technicien').value  = ev?.technicien   ?? '';
+  $('#f_hno').value         = String(ev?.hno ?? false);
+  $('#f_notes').value       = ev?.notes        ?? '';
+
+  // Ouvre la modale
+  $('#dlgEdit').showModal();
+}
+
+    // ======= UI HOOKS =======
+    function bindUI(){
+      $('#datePicker').value = state.currentDate;
+      $('#datePicker').addEventListener('change', async (e)=>{ state.currentDate = e.target.value; await refreshDay(); });
+      $('#techFilter').addEventListener('change', render);
+      $('#typeFilter').addEventListener('change', render);
+      $('#searchInput').addEventListener('input', render);
+      $('#excelInput').addEventListener('change', (e)=>{ const f=e.target.files[0]; if(f) handleExcel(f); e.target.value='' });
+      $('#btnAdd').addEventListener('click', ()=> openEditor());
+      $('#btnExport').addEventListener('click', openExportDialog);
+      $('#btnSettings').addEventListener('click', openSettings);
+      $('#eventsBody').addEventListener('click', (e)=>{
+        const btn = e.target.closest('button'); if(!btn) return;
+        const id = btn.getAttribute('data-id'); const act = btn.getAttribute('data-act');
+        const ev = state.events.find(x=>x.id===id);
+        if(!ev) return;
+        if(act==='edit') openEditor(ev);
+        else if(act==='mail'){ window._mail_ev = ev; openMailGenerator(ev); }
+      });
+
+      // Mail dialog events
+      $$('.tab').forEach(t=> t.addEventListener('click', ()=> switchTab(t.getAttribute('data-tab')) ));
+      ['m_site','m_address','m_date','m_time','m_duration','m_showTarif','m_desc','m_infos','m_ticket','m_category','m_tech_input','m_tech_phone']
+        .forEach(id=> $( '#'+id ).addEventListener('input', rebuildMails));
+
+      // Typeahead
+      const ta = $('#m_tech_input');
+      const list = $('#m_tech_list');
+      ta.addEventListener('input', ()=>{
+        const q = ta.value;
+        if(!q){ list.style.display='none'; return; }
+        const items = filterTechs(q);
+        if(!items.length){ list.style.display='none'; return; }
+        list.innerHTML = items.map(t=> `<div class="typeahead-item" data-name="${escapeHtml(t.displayName)}" data-phone="${escapeHtml(t.phoneDisplay||'')}">${escapeHtml(t.displayName)}${t.phoneDisplay?' — '+escapeHtml(t.phoneDisplay):''}</div>`).join('');
+        list.style.display='block';
+      });
+      list.addEventListener('click', (e)=>{
+        const it = e.target.closest('.typeahead-item'); if(!it) return;
+        $('#m_tech_input').value = it.getAttribute('data-name')||'';
+        $('#m_tech_phone').value = it.getAttribute('data-phone')||'';
+        list.style.display='none';
+        rebuildMails();
+      });
+      document.addEventListener('click', (e)=>{ if(!$('#m_tech_input').contains(e.target) && !$('#m_tech_list').contains(e.target)) $('#m_tech_list').style.display='none'; });
+
+      // Copy buttons
+      $('#copy_subject_mission').addEventListener('click', ()=> copyText('#m_subject_mission'));
+      $('#copy_body_mission').addEventListener('click', ()=> copyText('#m_body_mission'));
+      $('#copy_subject_rdv').addEventListener('click', ()=> copyText('#m_subject_rdv'));
+      $('#copy_body_rdv').addEventListener('click', ()=> copyText('#m_body_rdv'));
+    }
+
+    $('#dlgEdit')?.addEventListener('close', async (e)=>{
+      const action = $('#dlgEdit').returnValue;
+      if(action==='cancel') return;
+      if(action==='delete' && state.editing){
+        await deleteEvent(state.editing.id); toast('Supprimé'); await refreshDay(); return;
+      }
+      const rec = {
+        ticket: $('#f_ticket').value.trim(),
+        date: $('#f_date').value,
+        start_time: $('#f_time').value,
+        site: $('#f_site').value.trim(),
+        type: $('#f_type').value.trim(),
+        technicien: $('#f_technicien').value.trim(),
+        hno: $('#f_hno').value==='true',
+        notes: $('#f_notes').value.trim()
+      };
+      rec.event_uid = await sha1(`${rec.date}|${rec.ticket.toLowerCase()}|${rec.site.toLowerCase()}|${rec.technicien.toLowerCase()}|${rec.start_time}`);
+      if(state.editing && state.editing.id){ rec.id = state.editing.id; }
+      await upsertEvents([rec]); toast('Enregistré'); await refreshDay();
+    });
+
+    $('#dlgExport')?.addEventListener('close', async (e)=>{
+      if($('#dlgExport').returnValue === 'export'){
+        await handleExport();
+      }
+    });
+
+    function openSettings(){
+      $('#s_year').value = state.settings.year;
+      $('#s_dur').value = state.settings.icsDuration;
+      $('#s_include_exported').value = String(state.settings.includeExported);
+      // mapping setup interventions
+      const opts = ['ticket','site','type','technicien','heure'];
+      ['map0','map1','map2','map3','map4'].forEach((id,i)=>{
+        const s = $('#'+id); s.innerHTML='';
+        opts.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; s.appendChild(o) });
+        s.value = state.mapping[i]||opts[i];
+      });
+      // supabase creds
+      $('#s_supabase_url').value = state.supaCreds.url||'';
+      $('#s_supabase_key').value = state.supaCreds.key||'';
+      // annuaire
+      $('#s_tech_count').value = String(state.techDirectory.length||0);
+      $('#dlgSettings').showModal();
+    }
+
+    $('#dlgSettings')?.addEventListener('close', (e)=>{
+      if($('#dlgSettings').returnValue==='default'){
+        state.settings.year = parseInt($('#s_year').value||'2025',10);
+        state.settings.icsDuration = parseInt($('#s_dur').value||'120',10);
+        state.settings.includeExported = $('#s_include_exported').value==='true';
+        state.mapping = [$('#map0').value,$('#map1').value,$('#map2').value,$('#map3').value,$('#map4').value];
+        state.supaCreds = { url: $('#s_supabase_url').value.trim(), key: $('#s_supabase_key').value.trim() };
+        savePrefs();
+        if(state.supaCreds.url && state.supaCreds.key){ initSupabase(); }
+      }
+    });
+
+    // Settings: import annuaire + clear
+    $('#s_tech_excel')?.addEventListener('change', (e)=>{ const f=e.target.files[0]; if(f) importTechExcel(f); });
+    $('#s_tech_clear')?.addEventListener('click', ()=>{ state.techDirectory=[]; localStorage.removeItem('agenda_tech_directory'); $('#s_tech_count').value='0'; toast('Annuaire effacé'); });
+
+    function log(s){ const el=$('#log'); el.textContent = (dayjs().format('HH:mm:ss')+"  "+s+"\n") + el.textContent; }
+
+    // ======= BOOT =======
+    (function boot(){
+      loadPrefs();
+      bindUI();
+      $('#datePicker').value = state.currentDate;
+      render();
+      toast('Configure Supabase dans Paramètres, importe l’Excel interventions et (optionnel) l’annuaire techniciens');
+    })();
   </script>
+
+  <!--
+  =======================
+  Rappel SQL SUPABASE (inchangé depuis la version précédente)
+  =======================
+
+  create table if not exists public.events (
+    id uuid primary key default gen_random_uuid(),
+    event_uid text unique not null,
+    date date not null,
+    start_time time,
+    ticket text,
+    site text,
+    type text,
+    technicien text,
+    hno boolean default false,
+    notes text,
+    exported_flag boolean default false,
+    exported_at timestamptz,
+    created_at timestamptz default now(),
+    updated_at timestamptz default now()
+  );
+
+  create or replace function public.set_updated_at()
+  returns trigger as $$ begin new.updated_at = now(); return new; end; $$ language plpgsql;
+  drop trigger if exists trg_set_updated_at on public.events;
+  create trigger trg_set_updated_at before update on public.events for each row execute function public.set_updated_at();
+
+  alter table public.events enable row level security;
+  create policy if not exists "events_read_all" on public.events for select using (true);
+  create policy if not exists "events_write_all" on public.events for insert with check (true);
+  create policy if not exists "events_update_all" on public.events for update using (true) with check (true);
+  create policy if not exists "events_delete_all" on public.events for delete using (true);
+
+  -- Realtime: activer Realtime sur la table events.
+  -->
 </body>
 </html>
+
