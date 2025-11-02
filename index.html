@@ -3,15 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Agenda des interventions</title>
+  <title>Agenda des interventions + Planification Techniciens</title>
   <style>
-    :root{
-      --bg:#0b0f14; --panel:#111823; --muted:#7a8aa1; --text:#e6edf6; --accent:#4cc2ff; --accent-2:#78e08f; --danger:#ff6b6b; --warn:#ffc048;
-      --radius:16px;
-    }
+    :root{ --bg:#0b0f14; --panel:#111823; --muted:#7a8aa1; --text:#e6edf6; --accent:#4cc2ff; --accent-2:#78e08f; --danger:#ff6b6b; --warn:#ffc048; --radius:16px }
     *{box-sizing:border-box}
     html,body{height:100%}
-    body{margin:0;background:linear-gradient(180deg,#0a0f14,#0d141d);color:var(--text);font:14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial}
+    body{margin:0;background:linear-gradient(180deg,#0a0f14,#0d141d);color:var(--text);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
     header{position:sticky;top:0;z-index:10;background:rgba(10,15,20,.8);backdrop-filter:saturate(140%) blur(10px);border-bottom:1px solid #17202e}
     .wrap{max-width:1200px;margin:0 auto;padding:16px}
     .brand{display:flex;gap:10px;align-items:center}
@@ -19,11 +16,9 @@
     .brand .dot{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 30% 30%, #8ee0ff, #4cc2ff)}
     .toolbar{display:grid;grid-template-columns:1fr auto;gap:12px;margin-top:12px}
     .filters{display:flex;flex-wrap:wrap;gap:8px}
-    .filters > * {min-width:150px}
+    .filters>*{min-width:150px}
     .actions{display:flex;flex-wrap:wrap;gap:8px}
-    button,select,input[type="date"],input[type="time"],input[type="text"],input[type="file"],.btn,textarea{
-      background:#0f1622;color:var(--text);border:1px solid #1d2a3c;border-radius:12px;padding:10px 12px;outline:none
-    }
+    button,select,input[type="date"],input[type="time"],input[type="text"],input[type="file"],.btn,textarea{background:#0f1622;color:var(--text);border:1px solid #1d2a3c;border-radius:12px;padding:10px 12px;outline:none}
     button:hover,.btn:hover{border-color:#2b3d57}
     button.primary{background:linear-gradient(180deg,#1b283c,#142035);border-color:#274160}
     button.ok{background:linear-gradient(180deg,#204231,#1a3527);border-color:#2d6444}
@@ -50,13 +45,11 @@
     .badge.audit{border-color:#2e4f7a}
     .tag{font-size:11px;padding:2px 6px;border-radius:6px;border:1px solid #2b3d57;color:#a9c2db}
     .tag.hno{border-color:#6b3e3e;color:#ffbdbd}
-
     .flex{display:flex;gap:8px;align-items:center}
     .right{margin-left:auto}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
     .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-
     dialog{border:none;border-radius:18px;background:linear-gradient(180deg,#0e1520,#0a121a);color:var(--text);padding:0;max-width:760px;box-shadow:0 20px 60px rgba(0,0,0,.45)}
     dialog::backdrop{background:rgba(2,6,12,.6)}
     .modal-head{padding:16px 18px;border-bottom:1px solid #1a2535;display:flex;gap:8px;align-items:center}
@@ -64,30 +57,22 @@
     .modal-foot{padding:12px 18px;border-top:1px solid #1a2535;display:flex;gap:8px;justify-content:flex-end}
     .field{display:flex;flex-direction:column;gap:6px}
     .field label{font-size:12px;color:#a9c2db}
-
     .hint{font-size:12px;color:#9cb1c9}
     .sep{height:1px;background:#162133;margin:10px 0}
-
-    .tabs{display:flex;gap:6px}
-    .tab{padding:8px 10px;border:1px solid #203049;border-radius:999px;cursor:pointer}
-    .tab.active{border-color:#2b6f45;background:linear-gradient(180deg,#1d3c2a,#13271c)}
-    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-    textarea{min-height:84px;resize:vertical}
-
-    .typeahead{position:relative}
-    .typeahead-list{position:absolute;left:0;right:0;top:calc(100% + 6px);background:#0f1622;border:1px solid #263652;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.35);max-height:220px;overflow:auto;z-index:50}
-    .typeahead-item{padding:8px 10px;cursor:pointer}
-    .typeahead-item:hover,.typeahead-item.active{background:#142033}
-
     .toast{position:fixed;right:14px;bottom:14px;background:#0f1622;color:#dfefff;border:1px solid #263652;border-radius:12px;padding:10px 12px;box-shadow:0 10px 30px rgba(0,0,0,.3)}
     .small{padding:6px 8px;border-radius:10px}
+    .tablink{padding:8px 10px;border:1px solid #203049;border-radius:999px;cursor:pointer}
+    .tablink.active{border-color:#2b6f45;background:linear-gradient(180deg,#1d3c2a,#13271c)}
   </style>
 </head>
 <body>
   <header>
     <div class="wrap">
-      <div class="brand"><span class="dot"></span><h1>Agenda des interventions</h1><span id="liveState" class="pill" title="État de la connexion Realtime">Realtime : <strong id="liveLabel">off</strong></span><span class="muted" style="margin-left:auto">TZ locale</span></div>
+      <div class="brand">
+        <span class="dot"></span><h1>Agenda des interventions</h1>
+        <span id="liveState" class="pill" title="État de la connexion Realtime">Realtime : <strong id="liveLabel">off</strong></span>
+        <span class="muted" style="margin-left:auto">TZ locale</span>
+      </div>
       <div class="toolbar">
         <div class="filters">
           <input type="date" id="datePicker" />
@@ -101,6 +86,7 @@
           <button id="btnAdd" class="primary">+ Ajouter</button>
           <button id="btnExport">Exporter XLS</button>
           <button id="btnSettings">Paramètres</button>
+          <button id="btnOpenPlanif" title="Planification Techniciens" class="ok">📋 Ouvrir la Planification</button>
         </div>
       </div>
     </div>
@@ -111,21 +97,12 @@
       <section class="card">
         <h2 class="flex">Planning du <span id="dayLabel" class="badge">—</span><span class="right muted" id="countLabel"></span></h2>
         <table class="list" id="eventsTable">
-          <thead>
-            <tr>
-              <th>Ticket</th>
-              <th>Heure</th>
-              <th>Site / Ville</th>
-              <th>Type</th>
-              <th>Technicien</th>
-              <th>Infos</th>
-              <th></th>
-            </tr>
-          </thead>
+          <thead><tr>
+            <th>Ticket</th><th>Heure</th><th>Site / Ville</th><th>Type</th><th>Technicien</th><th>Infos</th><th></th>
+          </tr></thead>
           <tbody id="eventsBody"></tbody>
         </table>
       </section>
-
       <section class="card">
         <h2>Journal</h2>
         <div id="log" class="muted" style="white-space:pre-wrap"></div>
@@ -138,38 +115,14 @@
     <form method="dialog">
       <div class="modal-head"><strong id="dlgTitle">Nouvel événement</strong></div>
       <div class="modal-body grid2">
-        <div class="field">
-          <label>Ticket</label>
-          <input type="text" id="f_ticket" placeholder="Numéro du ticket" />
-        </div>
-        <div class="field">
-          <label>Date</label>
-          <input type="date" id="f_date" required />
-        </div>
-        <div class="field">
-          <label>Heure (HH:mm)</label>
-          <input type="time" id="f_time" required />
-        </div>
-        <div class="field">
-          <label>Site / Ville</label>
-          <input type="text" id="f_site" required placeholder="Ex. 4001 MARIE BLACHERE VALENCE CASINO - BBG" />
-        </div>
-        <div class="field">
-          <label>Type</label>
-          <input type="text" id="f_type" required placeholder="INFRA, ROCADE, AUDIT…" />
-        </div>
-        <div class="field">
-          <label>Technicien</label>
-          <input type="text" id="f_technicien" />
-        </div>
-        <div class="field">
-          <label>HNO</label>
-          <select id="f_hno"><option value="false">Non</option><option value="true">Oui</option></select>
-        </div>
-        <div class="field" style="grid-column:1/-1">
-          <label>Notes</label>
-          <input type="text" id="f_notes" placeholder="Optionnel" />
-        </div>
+        <div class="field"><label>Ticket</label><input type="text" id="f_ticket" placeholder="Numéro du ticket" /></div>
+        <div class="field"><label>Date</label><input type="date" id="f_date" required /></div>
+        <div class="field"><label>Heure (HH:mm)</label><input type="time" id="f_time" required /></div>
+        <div class="field"><label>Site / Ville</label><input type="text" id="f_site" required placeholder="Ex. 4001 MARIE BLACHERE VALENCE CASINO - BBG" /></div>
+        <div class="field"><label>Type</label><input type="text" id="f_type" required placeholder="INFRA, ROCADE, AUDIT…" /></div>
+        <div class="field"><label>Technicien</label><input type="text" id="f_technicien" /></div>
+        <div class="field"><label>HNO</label><select id="f_hno"><option value="false">Non</option><option value="true">Oui</option></select></div>
+        <div class="field" style="grid-column:1/-1"><label>Notes</label><input type="text" id="f_notes" placeholder="Optionnel" /></div>
       </div>
       <div class="modal-foot">
         <button id="btnDelete" class="danger" value="delete" style="display:none">Supprimer</button>
@@ -180,78 +133,29 @@
     </form>
   </dialog>
 
-  <!-- Modale paramètres (inclut Import Annuaire techniciens) -->
+  <!-- Modale Paramètres -->
   <dialog id="dlgSettings">
     <form method="dialog">
       <div class="modal-head"><strong>Paramètres</strong></div>
       <div class="modal-body">
         <div class="grid3">
-          <div class="field">
-            <label>Année par défaut pour feuilles Excel (DDMM)</label>
-            <input type="number" id="s_year" value="2025" min="2020" max="2100" />
-          </div>
-          <div class="field">
-            <label>Durée par défaut (minutes) pour ICS</label>
-            <input type="number" id="s_dur" value="120" min="15" step="15" />
-          </div>
-          <div class="field">
-            <label>Exporter: inclure déjà exportés ?</label>
-            <select id="s_include_exported"><option value="false">Non</option><option value="true">Oui</option></select>
-          </div>
+          <div class="field"><label>Année par défaut pour feuilles Excel (DDMM)</label><input type="number" id="s_year" value="2025" min="2020" max="2100" /></div>
+          <div class="field"><label>Durée par défaut (minutes) pour ICS</label><input type="number" id="s_dur" value="120" min="15" step="15" /></div>
+          <div class="field"><label>Exporter: inclure déjà exportés ?</label><select id="s_include_exported"><option value="false">Non</option><option value="true">Oui</option></select></div>
         </div>
         <div class="sep"></div>
         <div class="grid4">
-          <div class="field">
-            <label>Mapping colonne 1</label>
-            <select id="map0"></select>
-          </div>
-          <div class="field">
-            <label>Mapping colonne 2</label>
-            <select id="map1"></select>
-          </div>
-          <div class="field">
-            <label>Mapping colonne 3</label>
-            <select id="map2"></select>
-          </div>
-          <div class="field">
-            <label>Mapping colonne 4</label>
-            <select id="map3"></select>
-          </div>
-          <div class="field">
-            <label>Mapping colonne 5</label>
-            <select id="map4"></select>
-          </div>
+          <div class="field"><label>Mapping colonne 1</label><select id="map0"></select></div>
+          <div class="field"><label>Mapping colonne 2</label><select id="map1"></select></div>
+          <div class="field"><label>Mapping colonne 3</label><select id="map2"></select></div>
+          <div class="field"><label>Mapping colonne 4</label><select id="map3"></select></div>
+          <div class="field"><label>Mapping colonne 5</label><select id="map4"></select></div>
         </div>
-        <p class="hint">Le mapping correspond, dans l'ordre des colonnes de l'Excel importé, à : <code>ticket</code>, <code>site</code>, <code>type</code>, <code>technicien</code>, <code>heure</code>.</p>
-
+        <p class="hint">Le mapping correspond, dans l'ordre, à : <code>ticket</code>, <code>site</code>, <code>type</code>, <code>technicien</code>, <code>heure</code>.</p>
         <div class="sep"></div>
-        <h3 class="muted" style="margin:8px 0 2px">Annuaire techniciens</h3>
-        <div class="grid3">
-          <div class="field">
-            <label>Importer annuaire (Excel)</label>
-            <input type="file" id="s_tech_excel" accept=".xlsx,.xls" />
-          </div>
-          <div class="field">
-            <label>Techs importés</label>
-            <input type="text" id="s_tech_count" disabled placeholder="0" />
-          </div>
-          <div class="field">
-            <label>Effacer annuaire</label>
-            <button id="s_tech_clear" type="button" class="danger">Vider</button>
-          </div>
-        </div>
-        <p class="hint">Colonnes attendues (ou équivalentes) : <code>Nom</code>, <code>Prénom</code>, <code>Cp</code>, <code>Ville</code>, <code>Gsm</code>, <code>Tél</code>, <code>Email</code>. Le numéro affiché privilégie <em>Gsm</em>, sinon <em>Tél</em>.</p>
-        <div class="sep"></div>
-
         <div class="grid2">
-          <div class="field">
-            <label>Supabase URL</label>
-            <input type="text" id="s_supabase_url" placeholder="https://xxxx.supabase.co" />
-          </div>
-          <div class="field">
-            <label>Supabase Anon Key</label>
-            <input type="text" id="s_supabase_key" placeholder="eyJ..." />
-          </div>
+          <div class="field"><label>Supabase URL</label><input type="text" id="s_supabase_url" placeholder="https://xxxx.supabase.co" /></div>
+          <div class="field"><label>Supabase Anon Key</label><input type="text" id="s_supabase_key" placeholder="eyJ..." /></div>
         </div>
         <p class="hint">URL & clé publique anon sont stockées dans <em>localStorage</em>.</p>
       </div>
@@ -262,921 +166,772 @@
     </form>
   </dialog>
 
-  <!-- Modale Générateur d'e-mail -->
-  <dialog id="dlgMail">
-    <form method="dialog">
-      <div class="modal-head">
-        <strong>Générer un e-mail</strong>
-        <span class="tabs">
-          <span class="tab active" data-tab="mission">Missionnement</span>
-          <span class="tab" data-tab="rdv">Confirmation RDV</span>
-        </span>
-      </div>
-      <div class="modal-body">
-        <div class="three-col">
-          <div class="field">
-            <label>Ticket</label>
-            <input type="text" id="m_ticket" readonly />
-          </div>
-          <div class="field">
-            <label>Date (JJ/MM/AAAA)</label>
-            <input type="text" id="m_date" />
-          </div>
-          <div class="field">
-            <label>Heure (HH:mm)</label>
-            <input type="text" id="m_time" />
-          </div>
-        </div>
-        <div class="grid2" style="margin-top:10px">
-          <div class="field">
-            <label>Nom du site (raison sociale)</label>
-            <input type="text" id="m_site" placeholder="4001 MARIE BLACHERE VALENCE CASINO - BBG" />
-          </div>
-          <div class="field">
-            <label>Adresse du site</label>
-            <input type="text" id="m_address" placeholder="Adresse complète" />
-          </div>
-        </div>
-        <div class="three-col" style="margin-top:10px">
-          <div class="field">
-            <label>Catégorie</label>
-            <input type="text" id="m_category" readonly />
-          </div>
-          <div class="field">
-            <label>Durée (minutes) — 120=2h, 240=4h</label>
-            <input type="number" id="m_duration" min="15" step="15" />
-          </div>
-          <div class="field">
-            <label>Afficher Tarifs (admin)</label>
-            <select id="m_showTarif"><option value="false">Non</option><option value="true">Oui</option></select>
-          </div>
-        </div>
-
-        <div class="grid2" style="margin-top:10px">
-          <div class="field typeahead">
-            <label>Technicien (saisie progressive)</label>
-            <input type="text" id="m_tech_input" placeholder="Tape un prénom/nom (ex. lam…)" autocomplete="off" />
-            <div id="m_tech_list" class="typeahead-list" style="display:none"></div>
-          </div>
-          <div class="field">
-            <label>Téléphone technicien</label>
-            <input type="text" id="m_tech_phone" placeholder="Auto depuis annuaire" />
-          </div>
-        </div>
-
-        <div id="mission_fields" style="margin-top:10px">
-          <div class="two-col">
-            <div class="field">
-              <label>Descriptif de l'intervention</label>
-              <textarea id="m_desc" placeholder="À coller ici"></textarea>
-            </div>
-            <div class="field">
-              <label>Informations techniques</label>
-              <textarea id="m_infos" placeholder="À coller ici"></textarea>
-            </div>
-          </div>
-        </div>
-
-        <div class="sep"></div>
-
-        <!-- Prévisualisation -->
-        <div id="tab_mission">
-          <div class="field">
-            <label><strong>Objet (Missionnement)</strong></label>
-            <input type="text" id="m_subject_mission" readonly />
-          </div>
-          <div class="field">
-            <label><strong>Corps</strong></label>
-            <textarea id="m_body_mission" readonly></textarea>
-          </div>
-          <div class="flex">
-            <button type="button" id="copy_subject_mission" class="ok">Copier l’objet</button>
-            <button type="button" id="copy_body_mission" class="ok">Copier le corps</button>
-            <span class="right muted">Le bloc <em>Logistique</em> n’apparaît que pour les Travaux de Rocade.</span>
-          </div>
-        </div>
-
-        <div id="tab_rdv" style="display:none">
-          <div class="field">
-            <label><strong>Objet (Confirmation RDV)</strong></label>
-            <input type="text" id="m_subject_rdv" readonly />
-          </div>
-          <div class="field">
-            <label><strong>Corps</strong></label>
-            <textarea id="m_body_rdv" readonly></textarea>
-          </div>
-          <div class="flex">
-            <button type="button" id="copy_subject_rdv" class="ok">Copier l’objet</button>
-            <button type="button" id="copy_body_rdv" class="ok">Copier le corps</button>
-          </div>
-        </div>
-      </div>
-      <div class="modal-foot">
-        <button value="cancel">Fermer</button>
-      </div>
-    </form>
-  </dialog>
-
-  <!-- Modale Export XLS -->
-  <dialog id="dlgExport">
-    <form method="dialog">
-      <div class="modal-head"><strong>Exporter XLS</strong></div>
-      <div class="modal-body">
-        <div class="grid2">
-          <div class="field">
-            <label>Date début</label>
-            <input type="date" id="exp_start" />
-          </div>
-          <div class="field">
-            <label>Date fin</label>
-            <input type="date" id="exp_end" />
-          </div>
-        </div>
-        <div class="field">
-          <label>Type d'intervention</label>
-          <select id="exp_type">
-            <option value="">Tous</option>
-            <option value="travaux">Travaux</option>
-            <option value="audit">Audit</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Sous-type travaux</label>
-          <select id="exp_sub_travaux">
-            <option value="">Tous</option>
-            <option value="rocade">Rocade</option>
-            <option value="lien">Lien</option>
-            <option value="rocade_lien">Rocade et Lien</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Type baie</label>
-          <select id="exp_baie">
-            <option value="">Tous</option>
-            <option value="baie_lien">Baie et Lien</option>
-            <option value="baie_lien_rocade_isole">Baie Lien Rocade (isolé)</option>
-            <option value="baie_lien_rocade_mitoyen">Baie Lien Rocade (mitoyen)</option>
-          </select>
-        </div>
-      </div>
-      <div class="modal-foot">
-        <button value="cancel">Annuler</button>
-        <button class="ok" value="export">Exporter</button>
-      </div>
-    </form>
-  </dialog>
-
   <div id="toast" class="toast" style="display:none"></div>
 
-  <!-- Dependencies -->
+  <!-- Dépendances globales -->
   <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 
-  <script>
-    // ======= UTIL =======
-    const $ = (s, root=document) => root.querySelector(s);
-    const $$ = (s, root=document) => [...root.querySelectorAll(s)];
-    const toast = (msg, ms=2500) => { const t=$('#toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none', ms) };
-    const pad = n => String(n).padStart(2,'0');
-    const normalize = s => String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim();
+  <!-- Script principal -->
+  <script id="app-js">
+  'use strict';
 
-    function fmtDateLabel(d){ return dayjs(d).format('dddd DD MMM YYYY'); }
-    const toMailDate = iso => dayjs(iso).format('DD/MM/YYYY');
-
-    function parseHour(raw){
-      if(!raw) return { time:"08:00", hno:false };
-      const s = String(raw).trim();
-      const hno = /HNO/i.test(s);
-      const t = s
-        .replace(/\(HNO\)/ig,'')
-        .replace(/h/ig,':')
-        .replace(/\s+/g,'')
-        .replace(/^(\d{1,2}):?(\d{0,2})$/, (m,h,mn)=> `${pad(h)}:${pad(mn||'00')}`);
-      const m = t.match(/^(\d{1,2})(?::(\d{2}))?$/);
-      const hh = m ? pad(m[1]) : '08';
-      const mm = m && m[2] ? m[2] : '00';
-      return { time: `${hh}:${mm}`, hno };
+  (function(){
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', startApp);
+    } else {
+      startApp();
     }
 
-    async function sha1(text){
-      if(window.crypto?.subtle){
-        const enc = new TextEncoder().encode(text);
-        const buf = await crypto.subtle.digest('SHA-1', enc);
-        return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    function startApp(){
+
+      // ===== Utils =====
+      const $ = (s,root=document)=>root.querySelector(s);
+      const $$ = (s,root=document)=>[...root.querySelectorAll(s)];
+      const toast = (msg,ms=2500)=>{const t=$('#toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',ms)};
+      const pad = n=>String(n).padStart(2,'0');
+      const escapeHtml = s =>
+        String(s || '').replace(/[&<>"']/g, c => (
+          {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]
+        ));
+      const toMailDate = iso=> dayjs(iso).format('DD/MM/YYYY');
+
+      // ===== State (Agenda) =====
+      const state = {
+        supa:null, supaCreds:{url:'',key:''},
+        settings:{year:2025, icsDuration:120, includeExported:false},
+        mapping:['ticket','site','type','technicien','heure'],
+        currentDate: dayjs().format('YYYY-MM-DD'),
+        events:[], editing:null, options:{techs:new Set(), types:new Set()}
+      };
+
+      // ===== Prefs =====
+      function loadPrefs(){
+        try{
+          Object.assign(state.settings, JSON.parse(localStorage.getItem('agenda_settings')||'{}'));
+          const m = JSON.parse(localStorage.getItem('agenda_mapping')||'[]'); if(m.length===5) state.mapping=m;
+          const c = JSON.parse(localStorage.getItem('agenda_supabase')||'{}'); if(c.url&&c.key){ state.supaCreds=c; initSupabase(); }
+        }catch(e){}
       }
-      let h=0; for(let i=0;i<text.length;i++){h=((h<<5)-h)+text.charCodeAt(i); h|=0}
-      return 'f'+(h>>>0).toString(16);
-    }
+      function savePrefs(){
+        localStorage.setItem('agenda_settings', JSON.stringify(state.settings));
+        localStorage.setItem('agenda_mapping', JSON.stringify(state.mapping));
+        localStorage.setItem('agenda_supabase', JSON.stringify(state.supaCreds));
+        toast('Paramètres enregistrés');
+      }
 
-    function copyText(id){
-      const el = $(id);
-      if(!el) return;
-      navigator.clipboard.writeText(el.value || el.textContent || '')
-        .then(()=> toast('Copié'))
-        .catch(()=> toast('Impossible de copier'));
-    }
+      // ===== UI (Agenda) =====
+      function setLive(on){
+        $('#liveLabel').textContent = on?'on':'off';
+        $('#liveState').style.borderColor = on? '#2b6f45':'#203049';
+        $('#liveState').style.background = on? 'linear-gradient(180deg,#1d3c2a,#13271c)':'#0f1622';
+      }
+      function guessBadges(type){
+        const t=(type||'').toLowerCase();
+        if(t.includes('infra')) return 'badge infra';
+        if(t.includes('rocade')) return 'badge rocade';
+        if(t.includes('audit')) return 'badge audit';
+        return 'badge';
+      }
+      function updateFilters(){
+        const techSel=$('#techFilter'), typeSel=$('#typeFilter');
+        const tv=techSel.value, yv=typeSel.value;
+        techSel.innerHTML='<option value="">Tous techniciens</option>'+Array.from(state.options.techs).filter(Boolean).sort().map(v=>`<option>${escapeHtml(v)}</option>`).join('');
+        typeSel.innerHTML='<option value="">Tous types</option>'+Array.from(state.options.types).filter(Boolean).sort().map(v=>`<option>${escapeHtml(v)}</option>`).join('');
+        techSel.value=tv; typeSel.value=yv;
+      }
+      function fmtDateLabel(d){ return dayjs(d).format('dddd DD MMM YYYY'); }
+      function render(){
+        $('#dayLabel').textContent=fmtDateLabel(state.currentDate);
+        const q=$('#searchInput').value.toLowerCase().trim();
+        const tf=$('#techFilter').value, yf=$('#typeFilter').value;
+        const rows = state.events
+          .filter(e=>e.date===state.currentDate)
+          .filter(e=>!tf||e.technicien===tf)
+          .filter(e=>!yf||e.type===yf)
+          .filter(e=>!q || (String(e.ticket||'')+e.site+e.type+e.technicien+(e.notes||'')).toLowerCase().includes(q))
+          .sort((a,b)=> (a.start_time||'').localeCompare(b.start_time||''));
+        const body=$('#eventsBody'); body.innerHTML='';
+        rows.forEach(e=>{
+          const tr=document.createElement('tr'); tr.className='row';
+          tr.innerHTML=`
+            <td>${escapeHtml(e.ticket||'')}</td>
+            <td><strong>${e.start_time||''}</strong>${e.hno?' <span class="tag hno">HNO</span>':''}</td>
+            <td>${escapeHtml(e.site||'')}</td>
+            <td><span class="${guessBadges(e.type)}">${escapeHtml(e.type||'')}</span></td>
+            <td>${escapeHtml(e.technicien||'')}</td>
+            <td class="muted">${escapeHtml(e.notes||'')}</td>
+            <td><button data-id="${e.id}" data-act="edit" class="small">✏️</button></td>`;
+          body.appendChild(tr);
+        });
+        $('#countLabel').textContent = `${rows.length} intervention(s)`;
+        updateFilters();
+      }
 
-    function s2ab(s) {
-      const buf = new ArrayBuffer(s.length);
-      const view = new Uint8Array(buf);
-      for (let i=0; i<s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
-      return buf;
-    }
+      // ===== Supabase =====
+      function initSupabase(){
+        try{
+          state.supa = window.supabase.createClient(state.supaCreds.url, state.supaCreds.key, { auth:{persistSession:false} });
+          subscribeRealtime(); refreshDay();
+        }catch(err){ console.error(err); toast('Supabase non initialisé'); }
+      }
+      function subscribeRealtime(){
+        if(!state.supa) return;
+        state.supa.channel('events-changes')
+          .on('postgres_changes',{event:'*',schema:'public',table:'events'}, payload=>{ log('Realtime: '+payload.eventType); refreshDay(); })
+          .subscribe((status)=> setLive(status==='SUBSCRIBED'));
+      }
+      async function upsertEvents(items){
+        if(!state.supa) throw new Error('Supabase non configuré');
+        const {data,error}=await state.supa.from('events').upsert(items,{onConflict:'event_uid'}).select();
+        if(error) throw error; return data;
+      }
+      async function deleteEvent(id){ const {error}=await state.supa.from('events').delete().eq('id',id); if(error) throw error; }
+      async function fetchDay(date){ if(!state.supa) return []; const {data,error}=await state.supa.from('events').select('*').eq('date',date).order('start_time',{ascending:true}); if(error) throw error; return data||[]; }
+      async function fetchRange(start,end){
+        if(!state.supa) return [];
+        let q=state.supa.from('events').select('*');
+        if(start) q=q.gte('date',start);
+        if(end) q=q.lte('date',end);
+        const {data,error}=await q.order('date',{ascending:true}).order('start_time',{ascending:true});
+        if(error) throw error; return data||[];
+      }
+      async function refreshDay(){ if(!state.supa) return; const list=await fetchDay(state.currentDate); mergeEvents(list); }
+      function mergeEvents(list){
+        list.forEach(e=>{ if(e?.technicien) state.options.techs.add(e.technicien); if(e?.type) state.options.types.add(e.type); });
+        state.events = state.events.filter(e=>e.date!==state.currentDate).concat(list);
+        render();
+      }
 
-    function downloadFile(name, mime, data){
-      const blob = new Blob([data], {type:mime});
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
-    }
+      // ===== Import Excel (Agenda) =====
+      function parseHour(raw){
+        if(!raw) return {time:'08:00',hno:false};
+        const s=String(raw).trim(); const hno=/HNO/i.test(s);
+        const cleaned=s.replace(/\(HNO\)/ig,'').replace(/h/ig,':').replace(/\s+/g,'');
+        const m=cleaned.match(/^(\d{1,2})(?::?(\d{2}))?$/);
+        const hh = pad(m ? m[1] : '8');
+        const mm = m && m[2] ? m[2] : '00';
+        return {time:`${hh}:${mm}`, hno};
+      }
+      function sheetNameToDate(name){
+        const m=String(name).trim().match(/^(\d{2})(\d{2})$/); if(!m) return null;
+        const d=`${state.settings.year}-${m[2]}-${m[1]}`; return dayjs(d).isValid()? dayjs(d).format('YYYY-MM-DD') : null;
+      }
+      function parseRowsToEvents(rows, sheetDate){
+        const map=state.mapping, out=[];
+        rows.forEach(r=>{
+          if(!r) return;
+          let cells=r.filter(c=>c!==undefined&&c!==null&&String(c).trim()!==''); if(cells.length===0) return;
+          while(cells.length<5) cells.push('');
+          const rec={date:sheetDate,ticket:'',site:'',type:'',technicien:'',start_time:'',hno:false,notes:''};
+          const defaults=['ticket','site','type','technicien','heure'];
+          for(let i=0;i<5;i++){
+            const field=map[i]||defaults[i]; const val=String(cells[i]??'').trim();
+            if(field==='heure'){ const {time,hno}=parseHour(val); rec.start_time=time; if(hno) rec.hno=true; }
+            else if(field==='ticket'){ rec.ticket=val; }
+            else if(field in rec){ rec[field]=val; }
+          }
+          if(!rec.ticket && !rec.site && !rec.type && !rec.technicien) return;
+          out.push(rec);
+        });
+        return out;
+      }
+      async function sha1(text){
+        if(window.crypto?.subtle){
+          const enc=new TextEncoder().encode(text); const buf=await crypto.subtle.digest('SHA-1',enc);
+          return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+        }
+        let h=0; for(let i=0;i<text.length;i++){h=((h<<5)-h)+text.charCodeAt(i); h|=0} return 'f'+(h>>>0).toString(16);
+      }
+      function handleExcel(file){
+        const reader=new FileReader();
+        reader.onload = async (e)=>{
+          try{
+            const wb=XLSX.read(e.target.result,{type:'binary'}); const all=[];
+            for(const name of wb.SheetNames){
+              const d=sheetNameToDate(name); if(!d){ log('Feuille ignorée: '+name); continue; }
+              const ws=wb.Sheets[name]; const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true});
+              all.push(...parseRowsToEvents(rows,d));
+            }
+            if(!all.length){ toast('Aucune donnée détectée. Vérifie les noms de feuilles (DDMM).'); return; }
+            for(const ev of all){
+              const uidBase = `${ev.date}|${(ev.ticket||'').toLowerCase().trim()}|${(ev.site||'').toLowerCase().trim()}|${(ev.technicien||'').toLowerCase().trim()}|${ev.start_time||''}`;
+              ev.event_uid = await sha1(uidBase);
+            }
+            const saved = await upsertEvents(all);
+            toast(`Import terminé: ${saved.length} enregistrements`);
+            if (all.some(x => x.date === state.currentDate)) await refreshDay();
+          } catch (err) {
+            console.error(err);
+            toast("Erreur à l'import: " + (err && err.message ? err.message : err));
+          }
+        };
+        reader.readAsBinaryString(file);
+      }
 
-    // ======= STATE =======
-    const state = {
-      supa: null,
-      supaCreds: { url: '', key: '' },
-      settings: { year: 2025, icsDuration: 120, includeExported: false },
-      mapping: ['ticket','site','type','technicien','heure'], // import Excel interventions
-      currentDate: dayjs().format('YYYY-MM-DD'),
-      events: [],
-      editing: null,
-      options: { techs: new Set(), types: new Set() },
-      // Annuaire techniciens (localStorage)
-      techDirectory: [],   // [{firstName,lastName,cp,ville,gsm,tel,email,displayName,phoneDisplay}]
+      // ===== Editor / Export (Agenda) =====
+      function openEditor(ev=null){
+        state.editing=ev||null;
+        $('#dlgTitle').textContent=ev?'Modifier l’événement':'Nouvel événement';
+        $('#btnDelete').style.display=(ev&&ev.id)?'inline-flex':'none';
+        $('#f_ticket').value=ev?.ticket??'';
+        $('#f_date').value=ev?.date??state.currentDate;
+        $('#f_time').value=ev?.start_time??'';
+        $('#f_site').value=ev?.site??'';
+        $('#f_type').value=ev?.type??'';
+        $('#f_technicien').value=ev?.technicien??'';
+        $('#f_hno').value=String(ev?.hno??false);
+        $('#f_notes').value=ev?.notes??'';
+        $('#dlgEdit').showModal();
+      }
+      async function openExport(){
+        const data=await fetchRange(state.currentDate,state.currentDate);
+        const rows=data.map(e=>({Date:toMailDate(e.date),Heure:e.start_time||'', 'Type de travaux':e.type||'', 'Nom du tech':e.technicien||''}));
+        const ws=XLSX.utils.json_to_sheet(rows); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Interventions');
+        const bin=XLSX.write(wb,{bookType:'xlsx',type:'binary'}); const buf=new ArrayBuffer(bin.length); const view=new Uint8Array(buf);
+        for(let i=0;i<bin.length;i++) view[i]=bin.charCodeAt(i)&0xFF;
+        const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+        const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`export_inters_${state.currentDate}.xlsx`; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+        toast(`Exporté ${rows.length} interventions`);
+      }
+      function log(s){ const el=$('#log'); el.textContent=(dayjs().format('HH:mm:ss')+'  '+s+'\n')+el.textContent; }
+
+      // ======= PLANIFICATION PAGE (nouvel onglet) =======
+      function openPlanificationTab(){
+        const w = window.open('', '_blank');
+        if(!w){ toast('Popup bloquée par le navigateur'); return; }
+
+        // 1) Base document
+        const doc = w.document;
+        doc.open();
+        doc.write('<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Planification Techniciens — Intégrée</title></head><body></body></html>');
+        doc.close();
+
+        // 2) Styles (pas de template string géant)
+        const style = doc.createElement('style');
+        style.textContent = `
+:root{ --bg:#0b0f14; --panel:#101823; --muted:#7a8aa1; --text:#e6edf6; --accent:#4cc2ff; --ok:#78e08f; --danger:#ff6b6b; --warn:#ffc048; --radius:16px }
+*{box-sizing:border-box} html,body{height:100%}
+body{margin:0;background:linear-gradient(180deg,#0a0f14,#0d141d);color:var(--text);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
+header{position:sticky;top:0;z-index:10;background:rgba(10,15,20,.8);backdrop-filter:saturate(140%) blur(10px);border-bottom:1px solid #17202e}
+.wrap{max-width:1100px;margin:0 auto;padding:16px}
+.brand{display:flex;gap:10px;align-items:center}
+.brand .dot{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 30% 30%, #8ee0ff, #4cc2ff)}
+.brand h1{margin:0;font-size:18px;letter-spacing:.2px}
+main{max-width:1100px;margin:16px auto;padding:0 16px 60px}
+.grid{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:900px){.grid{grid-template-columns:330px 1fr}}
+.card{background:linear-gradient(180deg,#0f1622,#0c121b);border:1px solid #1a2535;border-radius:var(--radius);padding:16px;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+.card h2{margin:0 0 10px 0;font-size:16px}
+.muted{color:var(--muted)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.row4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px}
+label{font-size:12px;color:#a9c2db}
+input,select,button{background:#0f1622;color:#e6edf6;border:1px solid #1d2a3c;border-radius:12px;padding:10px 12px;outline:none}
+button:hover{border-color:#2b3d57}
+button.primary{background:linear-gradient(180deg,#1b283c,#142035);border-color:#274160}
+button.ok{background:linear-gradient(180deg,#204231,#1a3527);border-color:#2d6444}
+button.warn{background:linear-gradient(180deg,#3e310d,#2b2109);border-color:#6b5017}
+button.danger{background:linear-gradient(180deg,#3d1515,#2a0e0e);border-color:#6a2323}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap}
+.tech-list{max-height:260px;overflow:auto;border:1px solid #1b2a3e;border-radius:12px;padding:8px}
+.tech-item{display:flex;justify-content:space-between;align-items:center;padding:8px;border:1px solid #1b2940;border-radius:10px;margin-bottom:8px}
+.pill{display:inline-flex;gap:6px;align-items:center;border:1px solid #274160;border-radius:999px;padding:4px 8px;color:#bcd}
+.site-row{display:grid;grid-template-columns:1.6fr 1.1fr .8fr auto;gap:8px;align-items:center;margin-bottom:8px}
+.site-row .rm{padding:8px 10px}
+.hint{font-size:12px;color:#9cb1c9}
+.sep{height:1px;background:#162133;margin:12px 0}
+.toast{position:fixed;right:14px;bottom:14px;background:#0f1622;color:#dfefff;border:1px solid #263652;border-radius:12px;padding:10px 12px;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+`;
+        doc.head.appendChild(style);
+
+        // 3) Structure HTML
+        const header = doc.createElement('header');
+        header.innerHTML = `
+<div class="wrap">
+  <div class="brand">
+    <span class="dot"></span><h1>Planification Techniciens — Intégrée</h1>
+    <span class="pill" title="Stockage">LocalStorage</span>
+    <span class="muted" style="margin-left:auto">v2</span>
+  </div>
+</div>`;
+        doc.body.appendChild(header);
+
+        const main = doc.createElement('main');
+        main.innerHTML = `
+<div class="grid">
+  <section class="card">
+    <h2>1) Annuaire techniciens</h2>
+    <p class="hint">Excel attendu : <strong>Nom</strong>, <strong>Prénom</strong>, <strong>Départements</strong> (13, 30, 34 / 971…), <strong>Ville</strong>, <strong>Téléphone</strong>, <strong>Secteurs</strong>.</p>
+    <div class="toolbar" style="margin:8px 0 6px">
+      <label class="pill" for="excelInternes">📥 Importer INTERNES</label>
+      <input id="excelInternes" type="file" accept=".xlsx,.xls" hidden />
+      <label class="pill" for="excelSousT">📥 Importer SOUS-TRAITANTS</label>
+      <input id="excelSousT" type="file" accept=".xlsx,.xls" hidden />
+      <button id="btnClearInternes" class="danger">Effacer Internes</button>
+      <button id="btnClearSousT" class="danger">Effacer Sous-traitants</button>
+    </div>
+    <div class="sep"></div>
+    <div class="toolbar" style="gap:12px;flex-wrap:wrap">
+      <div>
+        <label style="display:block;font-size:12px;color:#a9c2db">Département (2 ou 3 ch., 2A/2B OK)</label>
+        <input type="text" id="deptInput" placeholder="ex. 13 ou 971" maxlength="3" />
+      </div>
+      <div>
+        <label style="display:block;font-size:12px;color:#a9c2db">Rechercher (début Nom/Prénom)</label>
+        <input type="text" id="searchTech" placeholder="ex. Jo pour Jonathan" />
+      </div>
+      <div class="muted" style="margin-left:auto"><span id="foundCount">0</span> résultat(s)</div>
+    </div>
+    <div id="techList" class="tech-list"></div>
+  </section>
+
+  <section class="card">
+    <h2>2) Composer les interventions pour <span id="selTechLabel" class="pill">—</span></h2>
+    <div class="row3">
+      <div>
+        <label>Technicien (dans ce département)</label>
+        <select id="techSelect"></select>
+      </div>
+      <div>
+        <label>Département</label>
+        <input type="text" id="deptSelected" placeholder="13" maxlength="3" />
+      </div>
+      <div>
+        <label>&nbsp;</label>
+        <button id="btnAddSite" class="primary">+ Ajouter un site</button>
+      </div>
+    </div>
+    <div class="sep"></div>
+    <div id="sitesContainer"></div>
+    <div class="toolbar" style="margin-top:8px">
+      <button id="btnSaveDraft" class="ok">Enregistrer pour ce technicien</button>
+      <button id="btnExportPlanif" class="primary">Exporter Planif tech</button>
+      <button id="btnClearDraft" class="warn">Vider le brouillon du tech</button>
+    </div>
+    <p class="hint">Chaque site : <em>Raison sociale / Ville</em>, <em>Type</em>, <em>HNO</em>. L’export crée un XLS (<strong>Département</strong>, <strong>Raison sociale</strong>, <strong>Date</strong>, <strong>Heure</strong>).</p>
+  </section>
+</div>
+<div id="toast" class="toast" style="display:none"></div>`;
+        doc.body.appendChild(main);
+
+        // 4) Charger XLSX (CDN)
+        const xlsx = doc.createElement('script');
+        xlsx.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+        doc.body.appendChild(xlsx);
+
+        // 5) Utilitaires + logique (fenêtre enfant)
+        const helper = doc.createElement('script');
+        helper.textContent = `
+const $ = (s,root=document)=>root.querySelector(s);
+const $$ = (s,root=document)=>[...root.querySelectorAll(s)];
+const toast = (m,ms=2200)=>{ const t=$('#toast'); t.textContent=m; t.style.display='block'; setTimeout(()=>t.style.display='none',ms) };
+const pad2 = v => String(v).padStart(2,'0');
+const normalize = s => String(s||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().trim();
+const escapeTxt = s => String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const state = {
+  internes: JSON.parse(localStorage.getItem('pt_techs_internes')||'[]'),
+  sousT: JSON.parse(localStorage.getItem('pt_techs_soustraitants')||'[]'),
+  draft: JSON.parse(localStorage.getItem('pt_draft')||'{}'),
+  lastDept: localStorage.getItem('pt_lastDept')||'',
+  view: 'all'
+};
+
+function normDeptToken(tok){
+  let t = String(tok||'').trim().toUpperCase();
+  if(!t) return '';
+  if(t==='2A'||t==='2B') return '20';
+  if(/^97[1-6]$/.test(t)) return t;
+  const num = t.replace(/[^0-9]/g,'');
+  if(!num) return '';
+  if(num.length===3) return num;
+  return pad2(num);
+}
+function parseDeptList(raw){
+  const s = String(raw||'').replace(/[^0-9A-Za-z,;\\s]/g,' ');
+  const parts = s.split(/[;,\s]+/).filter(Boolean);
+  const out = [...new Set(parts.map(normDeptToken).filter(Boolean))];
+  out.sort((a,b)=> (a.length-b.length) || a.localeCompare(b,'fr',{numeric:true}));
+  return out;
+}
+function normalizePhone(s){
+  const raw = String(s||'').trim();
+  if(!raw) return '';
+  const cl = raw.replace(/[^\\d+]/g,'');
+  if(/^0[1-9]\\d{8}$/.test(cl)) return '+33'+cl.slice(1);
+  return cl;
+}
+function keyName(nom, prenom){ return normalize((nom||'')+' '+(prenom||'')); }
+function dedupe(list){
+  const map=new Map();
+  for(const t of list){
+    const k=keyName(t.nom,t.prenom);
+    const depts = parseDeptList(t.depts?.join? t.depts.join(','): t.depts||'');
+    const secteurs = Array.isArray(t.secteurs)? t.secteurs : String(t.secteurs||'').split(/[;,]/).map(x=>x.trim()).filter(Boolean);
+    const rec = { nom:(t.nom||'').trim(), prenom:(t.prenom||'').trim(), depts, ville:(t.ville||'').trim(), tel:normalizePhone(t.tel||''), secteurs };
+    const prev = map.get(k);
+    if(!prev) map.set(k, rec);
+    else{
+      const nd=[...new Set((prev.depts||[]).concat(rec.depts||[]))].sort((a,b)=> (a.length-b.length)||a.localeCompare(b,'fr',{numeric:true}));
+      const ns=[...new Set((prev.secteurs||[]).concat(rec.secteurs||[]))];
+      map.set(k, { nom:prev.nom||rec.nom, prenom:prev.prenom||rec.prenom, depts:nd, ville:rec.ville||prev.ville, tel:rec.tel||prev.tel, secteurs:ns });
+    }
+  }
+  return [...map.values()];
+}
+function saveInternes(){ localStorage.setItem('pt_techs_internes', JSON.stringify(state.internes)); }
+function saveSousT(){ localStorage.setItem('pt_techs_soustraitants', JSON.stringify(state.sousT)); }
+function saveDraft(){ localStorage.setItem('pt_draft', JSON.stringify(state.draft)); }
+function setLastDept(v){ state.lastDept=v; localStorage.setItem('pt_lastDept', v); }
+
+function parseTechExcel(wb){
+  const out=[];
+  for(const name of wb.SheetNames){
+    const ws=wb.Sheets[name];
+    const rows = window.XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+    for(const r of rows){
+      if(!r||!r.length) continue;
+      const nom=(r[0]||'').toString().trim(), prenom=(r[1]||'').toString().trim();
+      const depts=parseDeptList((r[2]||'').toString());
+      const ville=(r[3]||'').toString().trim(), tel=(r[4]||'').toString().trim();
+      const secteursRaw=(r[5]||'').toString();
+      const secteurs=secteursRaw? secteursRaw.split(/[;,]/).map(x=>x.trim()).filter(Boolean):[];
+      if(!(nom||prenom) || depts.length===0) continue;
+      out.push({nom,prenom,depts,ville,tel,secteurs});
+    }
+  }
+  return out;
+}
+
+function matchDept(depts, q){
+  const nq = normDeptToken(String(q||'').trim().toUpperCase());
+  if(!nq) return true;
+  return (depts||[]).some(d => d===nq);
+}
+function startsPrefix(t, q){
+  const n = normalize(q||'');
+  if(!n) return true;
+  return normalize(t.prenom||'').startsWith(n) || normalize(t.nom||'').startsWith(n);
+}
+function getVisibleList(){
+  const dept = $('#deptInput').value;
+  const q = $('#searchTech').value;
+  let base = [];
+  if(state.view==='all') base = (state.internes||[]).concat(state.sousT||[]);
+  else if(state.view==='internes') base = state.internes||[];
+  else base = state.sousT||[];
+  return base.filter(t => matchDept(t.depts, dept) && startsPrefix(t,q))
+             .sort((a,b)=> (a.nom+a.prenom).localeCompare(b.nom+b.prenom,'fr',{sensitivity:'base'}));
+}
+function renderTechList(){
+  const list = getVisibleList();
+  $('#foundCount').textContent = String(list.length);
+  const box = $('#techList'); box.innerHTML='';
+  if(!list.length){ box.innerHTML='<div class="muted">Aucun technicien pour ce filtre.</div>'; return; }
+  list.forEach(t=>{
+    const badge = (state.view==='soustraitants' || (state.view==='all') && (state.sousT||[]).some(x=> keyName(x.nom,x.prenom)===keyName(t.nom,t.prenom)) ) ? 'Sous-traitant' : 'Interne';
+    const el = document.createElement('div'); el.className='tech-item';
+    el.innerHTML = \`
+      <div>
+        <strong>\${escapeTxt(t.prenom||'')} \${escapeTxt(t.nom||'')}</strong>
+        <span class="pill">\${badge}</span><br/>
+        <span class="muted">Dépts: \${escapeTxt((t.depts||[]).join(', '))}</span> ·
+        <span class="muted">Ville: \${escapeTxt(t.ville||'')}</span> ·
+        <span class="muted">Tel: \${escapeTxt(normalizePhone(t.tel||''))}</span> ·
+        <span class="muted">Secteurs: \${escapeTxt((t.secteurs||[]).join(', '))}</span>
+      </div>
+      <div><button class="primary" data-name="\${escapeTxt((t.prenom||'')+' '+(t.nom||''))}">Choisir</button></div>\`;
+    box.appendChild(el);
+  });
+}
+
+function fillTechSelect(){
+  const sel = $('#techSelect'); sel.innerHTML='';
+  const list = getVisibleList();
+  if(!list.length){ sel.innerHTML='<option value="">—</option>'; $('#selTechLabel').textContent='—'; return; }
+  sel.innerHTML = list.map(t => '<option>'+escapeTxt((t.prenom||'')+' '+(t.nom||''))+'</option>').join('');
+  $('#selTechLabel').textContent = sel.value || '—';
+  renderSites();
+}
+
+function keyFor(dept, tech){ return dept+'__'+tech; }
+function addSiteRow(data={}){
+  const row = document.createElement('div'); row.className='site-row';
+  row.innerHTML = \`
+    <input type="text" class="site" placeholder="Raison sociale / Ville" value="\${(data.site||'').replace(/"/g,'&quot;')}">
+    <select class="type">
+      <option\${data.type==='Audit site isolé'?' selected':''}>Audit site isolé</option>
+      <option\${data.type==='Audit site mitoyen'?' selected':''}>Audit site mitoyen</option>
+      <option\${data.type==='Travaux lien'?' selected':''}>Travaux lien</option>
+      <option\${data.type==='Travaux rocade'?' selected':''}>Travaux rocade</option>
+      <option\${data.type==='Travaux lien & rocade'?' selected':''}>Travaux lien & rocade</option>
+    </select>
+    <select class="hno">
+      <option value="Non"\${data.hno==='Non'||!data.hno?' selected':''}>HNO : Non</option>
+      <option value="Oui"\${data.hno==='Oui'?' selected':''}>HNO : Oui</option>
+    </select>
+    <button class="rm">🗑️</button>\`;
+  $('#sitesContainer').appendChild(row);
+  row.querySelector('.rm').addEventListener('click', ()=>{ row.remove(); saveDraftFromUI(); });
+}
+function getCurrentSelection(){
+  const dept=($('#deptSelected').value||'').trim();
+  const tech=($('#techSelect').value||'').trim();
+  const nd = normDeptToken(dept);
+  if(!/^([0-9]{2}|97[1-6])$/.test(nd)) return {ok:false,msg:'Renseigne le département (2 chiffres ou 971-976).'};
+  if(!tech) return {ok:false,msg:'Choisis un technicien.'};
+  return {ok:true, dept:nd, tech};
+}
+function renderSites(){
+  const sel=getCurrentSelection();
+  const c=$('#sitesContainer'); c.innerHTML='';
+  if(!sel.ok) return;
+  const key=keyFor(sel.dept, sel.tech);
+  const list = (state.draft[key]||[]);
+  if(!list.length){ addSiteRow(); return; }
+  list.forEach(addSiteRow);
+}
+function saveDraftFromUI(){
+  const sel=getCurrentSelection(); if(!sel.ok){ toast(sel.msg); return; }
+  const items=[];
+  $$('.site-row').forEach(r=>{
+    const site=r.querySelector('.site').value.trim();
+    const type=r.querySelector('.type').value.trim();
+    const hno=r.querySelector('.hno').value.trim();
+    if(site) items.push({site,type,hno});
+  });
+  state.draft[keyFor(sel.dept, sel.tech)] = items;
+  localStorage.setItem('pt_draft', JSON.stringify(state.draft));
+  toast('Brouillon enregistré');
+}
+function clearDraft(){
+  const sel=getCurrentSelection(); if(!sel.ok){ toast(sel.msg); return; }
+  delete state.draft[keyFor(sel.dept, sel.tech)];
+  localStorage.setItem('pt_draft', JSON.stringify(state.draft));
+  renderSites(); toast('Brouillon vidé');
+}
+
+function openExportTab(){
+  const sel = getCurrentSelection(); if(!sel.ok){ toast(sel.msg); return; }
+  const key = keyFor(sel.dept, sel.tech);
+  const list = (state.draft[key]||[]).map(it=> ({ dept: sel.dept, site: it.site }));
+  if(!list.length){ toast('Aucun site à exporter'); return; }
+
+  const rows = [['Département','Raison sociale','Date','Heure'], ...list.map(r=>[r.dept, r.site, '', ''])];
+  const wb = window.XLSX.utils.book_new();
+  const ws = window.XLSX.utils.aoa_to_sheet(rows);
+  window.XLSX.utils.book_append_sheet(wb, ws, 'Planif');
+  const bin = window.XLSX.write(wb, {bookType:'xlsx', type:'binary'});
+  const buf = new ArrayBuffer(bin.length);
+  const view = new Uint8Array(buf);
+  for(let i=0;i<bin.length;i++) view[i] = bin.charCodeAt(i) & 0xFF;
+  const blob = new Blob([buf], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const a = document.createElement('a');
+  const safeTech = sel.tech.replace(/[^a-z0-9_\\-]+/ig,'_');
+  a.href = URL.createObjectURL(blob);
+  a.download = \`planif_\${sel.dept}_\${safeTech}.xlsx\`;
+  a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+}
+
+function renderAfterImport(){ if(state.lastDept) $('#deptInput').value = state.lastDept; renderTechList(); fillTechSelect(); }
+
+function bindUI(){
+  // Imports fichiers
+  $('#excelInternes').addEventListener('change', e=>{
+    const f=e.target.files[0]; if(!f) return;
+    const r=new FileReader();
+    r.onload=ev=>{
+      try{
+        const wb=XLSX.read(ev.target.result,{type:'binary'});
+        const list=parseTechExcel(wb);
+        state.internes = dedupe([...(state.internes||[]), ...list]);
+        saveInternes(); toast('Internes chargés : '+state.internes.length);
+        renderAfterImport();
+      }catch(err){ console.error(err); toast('Erreur import Internes'); }
     };
-
-    // ======= PREFERENCES =======
-    function loadPrefs(){
+    r.readAsBinaryString(f); e.target.value='';
+  });
+  $('#excelSousT').addEventListener('change', e=>{
+    const f=e.target.files[0]; if(!f) return;
+    const r=new FileReader();
+    r.onload=ev=>{
       try{
-        const s = JSON.parse(localStorage.getItem('agenda_settings')||'{}');
-        Object.assign(state.settings, s);
-        const m = JSON.parse(localStorage.getItem('agenda_mapping')||'[]');
-        if(m.length===5) state.mapping = m;
-        const c = JSON.parse(localStorage.getItem('agenda_supabase')||'{}');
-        if(c.url && c.key){ state.supaCreds=c; initSupabase() }
-        const dir = JSON.parse(localStorage.getItem('agenda_tech_directory')||'[]');
-        state.techDirectory = Array.isArray(dir)? dir : [];
-      }catch(e){}
-    }
+        const wb=XLSX.read(ev.target.result,{type:'binary'});
+        const list=parseTechExcel(wb);
+        state.sousT = dedupe([...(state.sousT||[]), ...list]);
+        saveSousT(); toast('Sous-traitants chargés : '+state.sousT.length);
+        renderAfterImport();
+      }catch(err){ console.error(err); toast('Erreur import Sous-traitants'); }
+    };
+    r.readAsBinaryString(f); e.target.value='';
+  });
 
-    function savePrefs(){
-      localStorage.setItem('agenda_settings', JSON.stringify(state.settings));
-      localStorage.setItem('agenda_mapping', JSON.stringify(state.mapping));
-      localStorage.setItem('agenda_supabase', JSON.stringify(state.supaCreds));
-      toast('Paramètres enregistrés');
-    }
+  // Effacements
+  $('#btnClearInternes').addEventListener('click', ()=>{ state.internes=[]; saveInternes(); toast('Internes effacés'); renderAfterImport(); });
+  $('#btnClearSousT').addEventListener('click', ()=>{ state.sousT=[]; saveSousT(); toast('Sous-traitants effacés'); renderAfterImport(); });
 
-    // ======= UI CORE =======
-    function setLive(on){
-      $('#liveLabel').textContent = on? 'on' : 'off';
-      $('#liveState').style.borderColor = on? '#2b6f45' : '#203049';
-      $('#liveState').style.background = on? 'linear-gradient(180deg,#1d3c2a,#13271c)' : '#0f1622';
-    }
+  // Filtrage
+  $('#deptInput').addEventListener('input', ()=>{ setLastDept($('#deptInput').value.trim().toUpperCase()); renderTechList(); fillTechSelect(); });
+  $('#searchTech').addEventListener('input', ()=>{ renderTechList(); fillTechSelect(); });
 
-    function guessBadges(type){
-      const t = (type||'').toLowerCase();
-      if(t.includes('infra')) return 'badge infra';
-      if(t.includes('rocade')) return 'badge rocade';
-      if(t.includes('audit')) return 'badge audit';
-      return 'badge';
-    }
+  // Sélection tech / dept
+  $('#techSelect').addEventListener('change', ()=>{ $('#selTechLabel').textContent = $('#techSelect').value || '—'; renderSites(); });
+  $('#deptSelected').addEventListener('input', ()=> renderSites());
+  $('#btnAddSite').addEventListener('click', ()=> addSiteRow());
 
-    function updateFilters(){
-      const techSel = $('#techFilter');
-      const typeSel = $('#typeFilter');
-      const techV = techSel.value, typeV = typeSel.value;
-      techSel.innerHTML = '<option value="">Tous techniciens</option>' +
-        Array.from(state.options.techs).filter(Boolean).sort().map(v=>`<option>${v}</option>`).join('');
-      typeSel.innerHTML = '<option value="">Tous types</option>' +
-        Array.from(state.options.types).filter(Boolean).sort().map(v=>`<option>${v}</option>`).join('');
-      techSel.value = techV; typeSel.value = typeV;
-    }
+  // Brouillon + Export
+  $('#btnSaveDraft').addEventListener('click', saveDraftFromUI);
+  $('#btnClearDraft').addEventListener('click', clearDraft);
+  $('#btnExportPlanif').addEventListener('click', openExportTab);
 
-    function render(){
-      $('#dayLabel').textContent = fmtDateLabel(state.currentDate);
-      const q = $('#searchInput').value.toLowerCase().trim();
-      const tf = $('#techFilter').value; const yf = $('#typeFilter').value;
-      const rows = state.events
-        .filter(e=>e.date===state.currentDate)
-        .filter(e=>!tf || e.technicien===tf)
-        .filter(e=>!yf || e.type===yf)
-        .filter(e=>!q || (String(e.ticket||'')+e.site+e.type+e.technicien+(e.notes||'')).toLowerCase().includes(q))
-        .sort((a,b)=> (a.start_time||'').localeCompare(b.start_time||''));
-      const body = $('#eventsBody');
-      body.innerHTML = '';
-      rows.forEach(e=>{
-        const tr = document.createElement('tr'); tr.className='row';
-        tr.innerHTML = `
-          <td>${escapeHtml(e.ticket||'')}</td>
-          <td><strong>${e.start_time||''}</strong>${e.hno? ' <span class="tag hno">HNO</span>':''}</td>
-          <td>${escapeHtml(e.site||'')}</td>
-          <td><span class="${guessBadges(e.type)}">${escapeHtml(e.type||'')}</span></td>
-          <td>${escapeHtml(e.technicien||'')}</td>
-          <td class="muted">${escapeHtml(e.notes||'')}</td>
-          <td>
-            <button data-id="${e.id}" data-act="edit" class="small">✏️</button>
-            <button data-id="${e.id}" data-act="mail" class="small">✉️</button>
-          </td>`;
-        body.appendChild(tr);
-      });
-      $('#countLabel').textContent = `${rows.length} intervention(s)`;
-      updateFilters();
-    }
-
-    function escapeHtml(s){
-  return String(s||'').replace(/[&<>"']/g, c => ({
-    "&":"&amp;",
-    "<":"&lt;",
-    ">":"&gt;",
-    '"':"&quot;",
-    "'":"&#39;"
-  }[c]));
+  // Première passe
+  if(state.lastDept) $('#deptInput').value = state.lastDept;
+  renderTechList(); fillTechSelect();
 }
 
-    // ======= SUPABASE =======
-    function initSupabase(){
+// Attendre que XLSX soit chargé avant de binder
+(function waitX(){ if(!window.XLSX){ return setTimeout(waitX, 50); } bindUI(); })();
+`;
+        doc.body.appendChild(helper);
+      }
+
+      // ===== Bindings Agenda =====
+      function bindUI(){
+        $('#datePicker').value = state.currentDate;
+        $('#datePicker').addEventListener('change', async (e) => {
+          state.currentDate = e.target.value;
+          await refreshDay();
+        });
+        $('#techFilter').addEventListener('change', render);
+        $('#typeFilter').addEventListener('change', render);
+        $('#searchInput').addEventListener('input', render);
+
+        $('#excelInput').addEventListener('change', (e) => {
+          const f = e.target.files[0];
+          if (f) handleExcel(f);
+          e.target.value = '';
+        });
+
+        $('#btnAdd').addEventListener('click', () => openEditor());
+        $('#btnExport').addEventListener('click', openExport);
+        $('#btnSettings').addEventListener('click', openSettings);
+
+        $('#eventsBody').addEventListener('click', (e) => {
+          const btn = e.target.closest('button');
+          if (!btn) return;
+          const id = btn.getAttribute('data-id');
+          const act = btn.getAttribute('data-act');
+          const ev = state.events.find((x) => x.id === id);
+          if (!ev) return;
+          if (act === 'edit') openEditor(ev);
+        });
+
+        $('#btnOpenPlanif').addEventListener('click', openPlanificationTab);
+      }
+
+      function openSettings(){
+        $('#s_year').value = state.settings.year;
+        $('#s_dur').value = state.settings.icsDuration;
+        $('#s_include_exported').value = String(state.settings.includeExported);
+
+        const opts = ['ticket','site','type','technicien','heure'];
+        ['map0','map1','map2','map3','map4'].forEach((id,i) => {
+          const s = $('#'+id);
+          s.innerHTML = '';
+          opts.forEach((v) => {
+            const o = document.createElement('option');
+            o.value = v;
+            o.textContent = v;
+            s.appendChild(o);
+          });
+          s.value = state.mapping[i] || opts[i];
+        });
+
+        $('#s_supabase_url').value = state.supaCreds.url || '';
+        $('#s_supabase_key').value = state.supaCreds.key || '';
+        $('#dlgSettings').showModal();
+      }
+
+      $('#dlgSettings').addEventListener('close', () => {
+        if ($('#dlgSettings').returnValue === 'default') {
+          state.settings.year = parseInt($('#s_year').value || '2025', 10);
+          state.settings.icsDuration = parseInt($('#s_dur').value || '120', 10);
+          state.settings.includeExported = $('#s_include_exported').value === 'true';
+          state.mapping = [$('#map0').value, $('#map1').value, $('#map2').value, $('#map3').value, $('#map4').value];
+          state.supaCreds = {
+            url: ($('#s_supabase_url').value || '').trim(),
+            key: ($('#s_supabase_key').value || '').trim()
+          };
+          savePrefs();
+          if (state.supaCreds.url && state.supaCreds.key) initSupabase();
+        }
+      });
+
+      $('#dlgEdit').addEventListener('close', async () => {
+        const action = $('#dlgEdit').returnValue;
+        if (action === 'cancel') return;
+
+        if (action === 'delete' && state.editing) {
+          await deleteEvent(state.editing.id);
+          toast('Supprimé');
+          await refreshDay();
+          return;
+        }
+
+        const rec = {
+          ticket: $('#f_ticket').value.trim(),
+          date: $('#f_date').value,
+          start_time: $('#f_time').value,
+          site: $('#f_site').value.trim(),
+          type: $('#f_type').value.trim(),
+          technicien: $('#f_technicien').value.trim(),
+          hno: $('#f_hno').value === 'true',
+          notes: $('#f_notes').value.trim()
+        };
+
+        const uidBase = `${rec.date}|${rec.ticket.toLowerCase()}|${rec.site.toLowerCase()}|${rec.technicien.toLowerCase()}|${rec.start_time}`;
+
+        // SHA1 stable
+        if (window.crypto?.subtle) {
+          const enc = new TextEncoder().encode(uidBase);
+          const buf = await crypto.subtle.digest('SHA-1', enc);
+          rec.event_uid = Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2,'0')).join('');
+        } else {
+          let h = 0; for (let i=0;i<uidBase.length;i++){ h=((h<<5)-h)+uidBase.charCodeAt(i); h|=0; }
+          rec.event_uid = 'f' + (h>>>0).toString(16);
+        }
+
+        if (state.editing && state.editing.id) rec.id = state.editing.id;
+
+        await upsertEvents([rec]);
+        toast('Enregistré');
+        await refreshDay();
+      });
+
+      // ===== Boot sécurisé =====
       try{
-        state.supa = window.supabase.createClient(state.supaCreds.url, state.supaCreds.key, { auth: { persistSession:false } });
-        subscribeRealtime();
-        refreshDay();
-      }catch(err){ console.error(err); toast("Supabase non initialisé"); }
-    }
-
-    function subscribeRealtime(){
-      if(!state.supa) return;
-      state.supa.channel('events-changes')
-        .on('postgres_changes', { event: '*', schema:'public', table:'events' }, payload => {
-          log(`Realtime: ${payload.eventType}`);
-          refreshDay();
-        })
-        .subscribe((status)=>{ setLive(status==='SUBSCRIBED') });
-    }
-
-    async function upsertEvents(items){
-      if(!state.supa) throw new Error('Supabase non configuré');
-      const { data, error } = await state.supa.from('events').upsert(items, { onConflict:'event_uid' }).select();
-      if(error) throw error; return data;
-    }
-
-    async function deleteEvent(id){
-      const { error } = await state.supa.from('events').delete().eq('id', id);
-      if(error) throw error;
-    }
-
-    async function fetchDay(date){
-      if(!state.supa) return [];
-      const { data, error } = await state.supa
-        .from('events')
-        .select('*')
-        .eq('date', date)
-        .order('start_time', { ascending:true });
-      if(error) throw error; return data||[];
-    }
-
-    async function fetchRange(start, end){
-      if(!state.supa) return [];
-      let query = state.supa.from('events').select('*');
-      if(start) query = query.gte('date', start);
-      if(end) query = query.lte('date', end);
-      query = query.order('date', { ascending: true }).order('start_time', { ascending: true });
-      const { data, error } = await query;
-      if(error) throw error; return data||[];
-    }
-
-    async function refreshDay(){
-      if(!state.supa) return;
-      const dayData = await fetchDay(state.currentDate);
-      mergeEvents(dayData);
-    }
-
-    function mergeEvents(list){
-      list.forEach(e=>{
-        if(e?.technicien) state.options.techs.add(e.technicien);
-        if(e?.type) state.options.types.add(e.type);
-      });
-      state.events = state.events.filter(e=>e.date!==state.currentDate).concat(list);
-      render();
-    }
-
-    // ======= IMPORT EXCEL (Interventions) =======
-    function sheetNameToDate(name){
-      const s = String(name).trim();
-      const m = s.match(/^(\d{2})(\d{2})$/);
-      if(!m) return null;
-      const d = `${state.settings.year}-${m[2]}-${m[1]}`;
-      return dayjs(d).isValid()? dayjs(d).format('YYYY-MM-DD') : null;
-    }
-
-    function parseRowsToEvents(rows, sheetDate){
-      const map = state.mapping; // [ticket, site, type, technicien, heure]
-      const out=[];
-      rows.forEach(r=>{
-        if(!r) return;
-        let cells = r.filter(c=>c!==undefined && c!==null && String(c).trim()!=='');
-        if(cells.length===0) return;
-        while(cells.length<5) cells.push('');
-        const rec = { date: sheetDate, ticket:'', site:'', type:'', technicien:'', start_time:'', hno:false, notes:'' };
-        const defaults = ['ticket','site','type','technicien','heure'];
-        for(let i=0;i<5;i++){
-          const field = map[i]||defaults[i];
-          const val = String(cells[i]??'').trim();
-          if(field==='heure'){
-            const {time,hno} = parseHour(val); rec.start_time=time; if(hno) rec.hno=true;
-          } else if(field==='ticket'){ rec.ticket = val; }
-          else if(field in rec){ rec[field]=val; }
-        }
-        if(!rec.ticket && !rec.site && !rec.type && !rec.technicien) return;
-        out.push(rec);
-      });
-      return out;
-    }
-
-    async function handleExcel(file){
-      const reader = new FileReader();
-      reader.onload = async (e)=>{
-        try{
-          const wb = XLSX.read(e.target.result, { type:'binary' });
-          const all = [];
-          for(const name of wb.SheetNames){
-            const d = sheetNameToDate(name);
-            if(!d) { log(`Feuille ignorée: ${name}`); continue; }
-            const ws = wb.Sheets[name];
-            const rows = XLSX.utils.sheet_to_json(ws, { header:1, raw:true });
-            const events = parseRowsToEvents(rows, d);
-            all.push(...events);
-          }
-          if(!all.length){ toast('Aucune donnée détectée. Vérifie les noms de feuilles (DDMM).'); return; }
-
-          for(const ev of all){
-            const uidBase = `${ev.date}|${(ev.ticket||'').toLowerCase().trim()}|${(ev.site||'').toLowerCase().trim()}|${(ev.technicien||'').toLowerCase().trim()}|${ev.start_time||''}`;
-            ev.event_uid = await sha1(uidBase);
-          }
-          const saved = await upsertEvents(all);
-          toast(`Import terminé: ${saved.length} enregistrements`);
-          if(all.some(x=>x.date===state.currentDate)) await refreshDay();
-        }catch(err){ console.error(err); toast('Erreur à l\'import: ' + (err.message||err)); }
-      };
-      reader.readAsBinaryString(file);
-    }
-
-    // ======= ANNURAIRE TECHS (Excel -> localStorage) =======
-    function normalizePhone(s){
-      const raw = String(s||'').trim();
-      if(!raw) return '';
-      return raw.replace(/[^\d+]/g,''); // simple clean, conserve + si présent
-    }
-
-    function autoMapTechHeaders(rowObj){
-      // essaie d'associer les colonnes par nom, tolérant accents/variantes
-      const map = {};
-      const keys = Object.keys(rowObj||{});
-      const nkeys = keys.map(k=>({k, n: normalize(k)}));
-      function find(preds){ return (nkeys.find(({n})=> preds.some(p=> n.includes(p)))||{}).k }
-      map.nom    = find(['nom']);
-      map.prenom = find(['prenom','prénom','first','given']);
-      map.cp     = find(['cp','code postal','codepostal']);
-      map.ville  = find(['ville','city']);
-      map.gsm    = find(['gsm','mobile','portable','cell']);
-      map.tel    = find(['tel','tél','telephone','phone']);
-      map.email  = find(['email','courriel','mail']);
-      return map;
-    }
-
-    function importTechExcel(file){
-      const reader = new FileReader();
-      reader.onload = (e)=>{
-        try{
-          const wb = XLSX.read(e.target.result, { type:'binary' });
-          const ws = wb.Sheets[wb.SheetNames[0]];
-          const rows = XLSX.utils.sheet_to_json(ws, { defval:'' }); // objets avec en-têtes
-          if(!rows.length){ toast('Annuaire vide'); return; }
-          const map = autoMapTechHeaders(rows[0]);
-          const out=[];
-          for(const r of rows){
-            const firstName = String(r[map.prenom]||'').trim();
-            const lastName  = String(r[map.nom]||'').trim();
-            const cp        = String(r[map.cp]||'').trim();
-            const ville     = String(r[map.ville]||'').trim();
-            const gsm       = String(r[map.gsm]||'').trim();
-            const tel       = String(r[map.tel]||'').trim();
-            const email     = String(r[map.email]||'').trim();
-            if(!(firstName||lastName)) continue;
-            const phonePref = gsm || tel;
-            out.push({
-              firstName,lastName,cp,ville,gsm,tel,email,
-              displayName: (firstName+' '+lastName).trim(),
-              phoneDisplay: phonePref,
-              _n_name: normalize(firstName+' '+lastName),
-            });
-          }
-          state.techDirectory = out;
-          localStorage.setItem('agenda_tech_directory', JSON.stringify(out));
-          $('#s_tech_count').value = String(out.length);
-          toast(`Annuaire chargé: ${out.length} technicien(s)`);
-        }catch(err){ console.error(err); toast('Erreur import annuaire: '+(err.message||err)); }
-      };
-      reader.readAsBinaryString(file);
-    }
-
-    function filterTechs(query, limit=8){
-      const q = normalize(query);
-      if(!q) return [];
-      const tokens = q.split(' ').filter(Boolean);
-      const scored = [];
-      for(const t of state.techDirectory){
-        let ok = true, score = 0;
-        for(const tok of tokens){
-          const idx = t._n_name.indexOf(tok);
-          if(idx===-1){ ok=false; break; }
-          score += 100 - Math.min(idx, 99);
-        }
-        if(ok) scored.push({t, score});
-      }
-      scored.sort((a,b)=> b.score - a.score || a.t.displayName.length - b.t.displayName.length);
-      return scored.slice(0,limit).map(s=>s.t);
-    }
-
-    // ======= MAIL GENERATOR =======
-    function openMailGenerator(ev){
-      // Pré-remplissages
-      $('#m_ticket').value = ev.ticket || '';
-      $('#m_site').value = ev.site || '';
-      $('#m_address').value = '';
-      $('#m_date').value = toMailDate(ev.date);
-      $('#m_time').value = ev.start_time || '';
-      const cat = inferCategory(ev.type);
-      $('#m_category').value = cat;
-      $('#m_duration').value = (cat==='Audit') ? 120 : 240; // 2h / 4h par défaut
-      $('#m_showTarif').value = 'false';
-      $('#m_tech_input').value = ev.technicien || '';
-      $('#m_tech_phone').value = ''; // tente auto si annuaire match exact
-      if(ev.technicien){
-        const cand = filterTechs(ev.technicien,1)[0];
-        if(cand){ $('#m_tech_phone').value = cand.phoneDisplay; }
-      }
-      $('#m_desc').value = '';
-      $('#m_infos').value = '';
-
-      // tab par défaut
-      switchTab('mission');
-      rebuildMails();
-      $('#dlgMail').showModal();
-    }
-
-    function switchTab(name){
-      $$('.tab').forEach(t=> t.classList.toggle('active', t.getAttribute('data-tab')===name));
-      $('#tab_mission').style.display = (name==='mission')?'block':'none';
-      $('#tab_rdv').style.display     = (name==='rdv')?'block':'none';
-    }
-
-    function inferCategory(type){
-      const t = normalize(type);
-      if(t.includes('audit')) return 'Audit';
-      if(t.includes('infra') || t.includes('rocade')) return 'Travaux';
-      return 'Travaux';
-    }
-
-    function hasRocade(type){
-      return normalize(type).includes('rocade');
-    }
-
-    function mmToHHMM(mm){
-      const m = Math.max(parseInt(mm||0,10),0);
-      const h = Math.floor(m/60), r = m%60;
-      return `${pad(h)}h${pad(r)}`;
-    }
-
-    function formatTicketForSubject(t){
-      const s = String(t||'').trim();
-      if(!s) return 'N° TICKET D4';
-      return /^\s*n°/i.test(s) ? s : `N° ${s}`;
-    }
-
-    function buildMissionnementSubject(site, ticket){
-      return `OBJET MAIL : MISSIONNEMENT PROJET MARIE BLACHERE - ${formatTicketForSubject(ticket)} - ${site||'NOM SITE'}`;
-    }
-
-    function buildMissionnementBody(data){
-      const {
-        category, date, time, durationMin, showTarif, address, site,
-        desc, infos, typeRaw
-      } = data;
-      const tarifLine = showTarif ? `Tarif : xxx€ + xxx€ de frais (à communiquer seulement lorsque le mail est envoyé au responsable administratif car ces techniciens ne doivent pas avoir connaissance du tarif convenu)\n` : '';
-      const logBloc = (category==='Travaux' && hasRocade(typeRaw)) ? (
-`A mentionner seulement si Travaux : 
-Logistique : 
-Nous t'avons expédié des équipements à installer lors de la réalisation des travaux.
-Les informations d'expédition sont disponibles dans ton ticket MOBILITY 4.
-Attention, les colis ne restent que 7 jours calendaires au point relais.
-
-`
-      ) : '';
-
-return `Bonjour,
-
-Comme convenu ensemble, nous te missionnons sur le projet MARIE BLACHERE pour l'intervention suivante : 
-
-Informations générales : 
-Nature de l'intervention : ${category}
-Date d'intervention : ${date}
-Heure d'intervention : ${time}
-Durée : ${mmToHHMM(durationMin)}
-${tarifLine}Adresse du site : ${address||'XXXXXX'}
-Nom du site : ${site||'XXXXXX'}
-
-Contacts : 
-
-Bugbusters : 
-• Jonathan OTONIA : 01 88 61 35 79
-• Laura GIRALDO : 06 60 81 71 55
-• Jean-Michel SANTIAGO : 06 37 43 08 48 
-
-Marie BLACHERE : 04 90 26 26 68 (à appeler en cas de retard)
-
-Informations techniques : 
-
-Descriptif de l'intervention
-${desc||''}
-
-Informations techniques
-${infos||''}
-
-Les documents techniques sont disponibles dans le ticket de l'intervention.
-
-Rapport intervention : 
-• Rédiger le rapport d'intervention sur KIZEO avec photos horodatées
-• Rédiger le rapport d'intervention sur MOBILITY 4
-
-Informations importantes : 
-• Les retards d'arrivée sur site doivent faire l'objet d'une alerte immédiate auprès de Jonathan ou Jean-Michel
-• Toute difficulté rencontrée sur site doit être communiquée à Jonathan ou Jean-Michel
-
-${logBloc}Nous restons disponibles si tu as la moindre question,
-
-En te remerciant,
-
-Otonia Jonathan  
-01 88 61 35 79`;
-    }
-
-    function buildRDVSubject(site){
-      return `OBJET DU MAIL : RDV AUDIT DE BAIE BOUYGUES TELECOM - ${site||'[NOM DU SITE]'}`;
-    }
-
-    function buildRDVBody(site, date, time, techName, techPhone){
-      const who = techName ? `${techName}${techPhone? ' '+techPhone : ''}` : '[Nom Prénom + Téléphone]';
-      return `Bonjour,
-Pour le site ${site||'[NOM DU SITE]'}, je peux vous proposer le ${date||'[Date]'} à ${time||'[Heure]'} avec le technicien ${who}.
-Je vous remercie par avance pour votre retour.
-Cordialement,
-Otonia Jonathan 01 88 61 35 79`;
-    }
-
-    function rebuildMails(){
-      const site = $('#m_site').value.trim();
-      const ticket = $('#m_ticket').value.trim();
-      const address = $('#m_address').value.trim();
-      const date = $('#m_date').value.trim();
-      const time = $('#m_time').value.trim();
-      const category = $('#m_category').value.trim() || 'Travaux';
-      const durationMin = parseInt($('#m_duration').value|| (category==='Audit'?120:240),10);
-      const showTarif = $('#m_showTarif').value==='true';
-      const desc = $('#m_desc').value;
-      const infos = $('#m_infos').value;
-      const techName = $('#m_tech_input').value.trim();
-      const techPhone = $('#m_tech_phone').value.trim();
-
-      // On tente de récupérer le type brut de l'event courant (si possible)
-      const ev = window._mail_ev || {};
-      const typeRaw = ev.type || '';
-
-      // Missionnement
-      $('#m_subject_mission').value = buildMissionnementSubject(site, ticket);
-      $('#m_body_mission').value = buildMissionnementBody({
-        category, date, time, durationMin, showTarif, address, site, desc, infos, typeRaw
-      });
-
-      // Confirmation RDV
-      $('#m_subject_rdv').value = buildRDVSubject(site);
-      $('#m_body_rdv').value = buildRDVBody(site, date, time, techName, techPhone);
-    }
-
-    // ======= EXPORT XLS =======
-    function openExportDialog(){
-      $('#exp_start').value = state.currentDate;
-      $('#exp_end').value = state.currentDate;
-      $('#exp_type').value = '';
-      $('#exp_sub_travaux').value = '';
-      $('#exp_baie').value = '';
-      $('#dlgExport').showModal();
-    }
-
-    async function handleExport(){
-      const start = $('#exp_start').value;
-      const end = $('#exp_end').value;
-      const mainType = $('#exp_type').value;
-      const subTravaux = $('#exp_sub_travaux').value;
-      const baieType = $('#exp_baie').value;
-
-      if(!state.supa) { toast('Supabase non configuré'); return; }
-
-      const data = await fetchRange(start, end);
-
-      let filtered = data;
-
-      if(mainType){
-        const kw = mainType === 'travaux' ? ['travaux', 'infra', 'rocade', 'lien', 'baie'] : ['audit'];
-        filtered = filtered.filter(e => kw.some(k => normalize(e.type || '').includes(k)));
+        loadPrefs();
+        bindUI();
+        $('#datePicker').value = state.currentDate;
+        // Si Supabase non configuré, on peut quand même afficher UI (events resteront vides)
+        // render après éventuellement refreshDay
+        render();
+        toast("Configure Supabase (si besoin), importe l’Excel interventions. Planification via le bouton 📋");
+      }catch(err){
+        console.error('BOOT ERROR:', err);
+        toast('Erreur au démarrage: ' + (err && err.message ? err.message : err));
       }
 
-      if(subTravaux && mainType === 'travaux'){
-        if(subTravaux === 'rocade'){
-          filtered = filtered.filter(e => normalize(e.type || '').includes('rocade') && !normalize(e.type || '').includes('lien'));
-        } else if(subTravaux === 'lien'){
-          filtered = filtered.filter(e => normalize(e.type || '').includes('lien') && !normalize(e.type || '').includes('rocade'));
-        } else if(subTravaux === 'rocade_lien'){
-          filtered = filtered.filter(e => normalize(e.type || '').includes('rocade') && normalize(e.type || '').includes('lien'));
-        }
-      }
-
-      if(baieType){
-        if(baieType === 'baie_lien'){
-          filtered = filtered.filter(e => normalize(e.type || '').includes('baie') && normalize(e.type || '').includes('lien') && !normalize(e.type || '').includes('rocade'));
-        } else if(baieType === 'baie_lien_rocade_isole'){
-          filtered = filtered.filter(e => normalize(e.type || '').includes('baie') && normalize(e.type || '').includes('lien') && normalize(e.type || '').includes('rocade') && normalize(e.type || '').includes('isole'));
-        } else if(baieType === 'baie_lien_rocade_mitoyen'){
-          filtered = filtered.filter(e => normalize(e.type || '').includes('baie') && normalize(e.type || '').includes('lien') && normalize(e.type || '').includes('rocade') && normalize(e.type || '').includes('mitoyen'));
-        }
-      }
-
-      const rows = filtered.map(e => ({
-        Date: toMailDate(e.date),
-        Heure: e.start_time || '',
-        'Type de travaux': e.type || '',
-        'Nom du tech': e.technicien || ''
-      }));
-
-      const ws = XLSX.utils.json_to_sheet(rows);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Interventions");
-
-      const bin = XLSX.write(wb, {bookType:'xlsx', type:'binary'});
-      downloadFile(`export_inters_${start || 'debut'}_${end || 'fin'}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', s2ab(bin));
-
-      toast(`Exporté ${rows.length} interventions`);
-    }
-
-// ======= EDITOR (Ajouter / Modifier) =======
-function openEditor(ev = null){
-  state.editing = ev || null;
-
-  // Titre & bouton supprimer
-  $('#dlgTitle').textContent = ev ? 'Modifier l’événement' : 'Nouvel événement';
-  $('#btnDelete').style.display = (ev && ev.id) ? 'inline-flex' : 'none';
-
-  // Pré-remplissage des champs
-  $('#f_ticket').value      = ev?.ticket       ?? '';
-  $('#f_date').value        = ev?.date         ?? state.currentDate;
-  $('#f_time').value        = ev?.start_time   ?? '';
-  $('#f_site').value        = ev?.site         ?? '';
-  $('#f_type').value        = ev?.type         ?? '';
-  $('#f_technicien').value  = ev?.technicien   ?? '';
-  $('#f_hno').value         = String(ev?.hno ?? false);
-  $('#f_notes').value       = ev?.notes        ?? '';
-
-  // Ouvre la modale
-  $('#dlgEdit').showModal();
-}
-
-    // ======= UI HOOKS =======
-    function bindUI(){
-      $('#datePicker').value = state.currentDate;
-      $('#datePicker').addEventListener('change', async (e)=>{ state.currentDate = e.target.value; await refreshDay(); });
-      $('#techFilter').addEventListener('change', render);
-      $('#typeFilter').addEventListener('change', render);
-      $('#searchInput').addEventListener('input', render);
-      $('#excelInput').addEventListener('change', (e)=>{ const f=e.target.files[0]; if(f) handleExcel(f); e.target.value='' });
-      $('#btnAdd').addEventListener('click', ()=> openEditor());
-      $('#btnExport').addEventListener('click', openExportDialog);
-      $('#btnSettings').addEventListener('click', openSettings);
-      $('#eventsBody').addEventListener('click', (e)=>{
-        const btn = e.target.closest('button'); if(!btn) return;
-        const id = btn.getAttribute('data-id'); const act = btn.getAttribute('data-act');
-        const ev = state.events.find(x=>x.id===id);
-        if(!ev) return;
-        if(act==='edit') openEditor(ev);
-        else if(act==='mail'){ window._mail_ev = ev; openMailGenerator(ev); }
-      });
-
-      // Mail dialog events
-      $$('.tab').forEach(t=> t.addEventListener('click', ()=> switchTab(t.getAttribute('data-tab')) ));
-      ['m_site','m_address','m_date','m_time','m_duration','m_showTarif','m_desc','m_infos','m_ticket','m_category','m_tech_input','m_tech_phone']
-        .forEach(id=> $( '#'+id ).addEventListener('input', rebuildMails));
-
-      // Typeahead
-      const ta = $('#m_tech_input');
-      const list = $('#m_tech_list');
-      ta.addEventListener('input', ()=>{
-        const q = ta.value;
-        if(!q){ list.style.display='none'; return; }
-        const items = filterTechs(q);
-        if(!items.length){ list.style.display='none'; return; }
-        list.innerHTML = items.map(t=> `<div class="typeahead-item" data-name="${escapeHtml(t.displayName)}" data-phone="${escapeHtml(t.phoneDisplay||'')}">${escapeHtml(t.displayName)}${t.phoneDisplay?' — '+escapeHtml(t.phoneDisplay):''}</div>`).join('');
-        list.style.display='block';
-      });
-      list.addEventListener('click', (e)=>{
-        const it = e.target.closest('.typeahead-item'); if(!it) return;
-        $('#m_tech_input').value = it.getAttribute('data-name')||'';
-        $('#m_tech_phone').value = it.getAttribute('data-phone')||'';
-        list.style.display='none';
-        rebuildMails();
-      });
-      document.addEventListener('click', (e)=>{ if(!$('#m_tech_input').contains(e.target) && !$('#m_tech_list').contains(e.target)) $('#m_tech_list').style.display='none'; });
-
-      // Copy buttons
-      $('#copy_subject_mission').addEventListener('click', ()=> copyText('#m_subject_mission'));
-      $('#copy_body_mission').addEventListener('click', ()=> copyText('#m_body_mission'));
-      $('#copy_subject_rdv').addEventListener('click', ()=> copyText('#m_subject_rdv'));
-      $('#copy_body_rdv').addEventListener('click', ()=> copyText('#m_body_rdv'));
-    }
-
-    $('#dlgEdit')?.addEventListener('close', async (e)=>{
-      const action = $('#dlgEdit').returnValue;
-      if(action==='cancel') return;
-      if(action==='delete' && state.editing){
-        await deleteEvent(state.editing.id); toast('Supprimé'); await refreshDay(); return;
-      }
-      const rec = {
-        ticket: $('#f_ticket').value.trim(),
-        date: $('#f_date').value,
-        start_time: $('#f_time').value,
-        site: $('#f_site').value.trim(),
-        type: $('#f_type').value.trim(),
-        technicien: $('#f_technicien').value.trim(),
-        hno: $('#f_hno').value==='true',
-        notes: $('#f_notes').value.trim()
-      };
-      rec.event_uid = await sha1(`${rec.date}|${rec.ticket.toLowerCase()}|${rec.site.toLowerCase()}|${rec.technicien.toLowerCase()}|${rec.start_time}`);
-      if(state.editing && state.editing.id){ rec.id = state.editing.id; }
-      await upsertEvents([rec]); toast('Enregistré'); await refreshDay();
-    });
-
-    $('#dlgExport')?.addEventListener('close', async (e)=>{
-      if($('#dlgExport').returnValue === 'export'){
-        await handleExport();
-      }
-    });
-
-    function openSettings(){
-      $('#s_year').value = state.settings.year;
-      $('#s_dur').value = state.settings.icsDuration;
-      $('#s_include_exported').value = String(state.settings.includeExported);
-      // mapping setup interventions
-      const opts = ['ticket','site','type','technicien','heure'];
-      ['map0','map1','map2','map3','map4'].forEach((id,i)=>{
-        const s = $('#'+id); s.innerHTML='';
-        opts.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; s.appendChild(o) });
-        s.value = state.mapping[i]||opts[i];
-      });
-      // supabase creds
-      $('#s_supabase_url').value = state.supaCreds.url||'';
-      $('#s_supabase_key').value = state.supaCreds.key||'';
-      // annuaire
-      $('#s_tech_count').value = String(state.techDirectory.length||0);
-      $('#dlgSettings').showModal();
-    }
-
-    $('#dlgSettings')?.addEventListener('close', (e)=>{
-      if($('#dlgSettings').returnValue==='default'){
-        state.settings.year = parseInt($('#s_year').value||'2025',10);
-        state.settings.icsDuration = parseInt($('#s_dur').value||'120',10);
-        state.settings.includeExported = $('#s_include_exported').value==='true';
-        state.mapping = [$('#map0').value,$('#map1').value,$('#map2').value,$('#map3').value,$('#map4').value];
-        state.supaCreds = { url: $('#s_supabase_url').value.trim(), key: $('#s_supabase_key').value.trim() };
-        savePrefs();
-        if(state.supaCreds.url && state.supaCreds.key){ initSupabase(); }
-      }
-    });
-
-    // Settings: import annuaire + clear
-    $('#s_tech_excel')?.addEventListener('change', (e)=>{ const f=e.target.files[0]; if(f) importTechExcel(f); });
-    $('#s_tech_clear')?.addEventListener('click', ()=>{ state.techDirectory=[]; localStorage.removeItem('agenda_tech_directory'); $('#s_tech_count').value='0'; toast('Annuaire effacé'); });
-
-    function log(s){ const el=$('#log'); el.textContent = (dayjs().format('HH:mm:ss')+"  "+s+"\n") + el.textContent; }
-
-    // ======= BOOT =======
-    (function boot(){
-      loadPrefs();
-      bindUI();
-      $('#datePicker').value = state.currentDate;
-      render();
-      toast('Configure Supabase dans Paramètres, importe l’Excel interventions et (optionnel) l’annuaire techniciens');
-    })();
+    } // fin startApp
+  })();
   </script>
 
   <!--
   =======================
-  Rappel SQL SUPABASE (inchangé depuis la version précédente)
+  Rappel SQL SUPABASE
   =======================
 
   create table if not exists public.events (
@@ -1202,13 +957,12 @@ function openEditor(ev = null){
   create trigger trg_set_updated_at before update on public.events for each row execute function public.set_updated_at();
 
   alter table public.events enable row level security;
-  create policy if not exists "events_read_all" on public.events for select using (true);
-  create policy if not exists "events_write_all" on public.events for insert with check (true);
+  create policy if not exists "events_read_all"   on public.events for select using (true);
+  create policy if not exists "events_write_all"  on public.events for insert with check (true);
   create policy if not exists "events_update_all" on public.events for update using (true) with check (true);
   create policy if not exists "events_delete_all" on public.events for delete using (true);
 
-  -- Realtime: activer Realtime sur la table events.
+  -- Activer Realtime sur la table events dans Supabase.
   -->
 </body>
 </html>
-
