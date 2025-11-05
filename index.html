@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Agenda des interventions + Planification Techniciens</title>
+  <link rel="icon" href="data:,">
   <style>
     :root{ --bg:#0b0f14; --panel:#111823; --muted:#7a8aa1; --text:#e6edf6; --accent:#4cc2ff; --accent-2:#78e08f; --danger:#ff6b6b; --warn:#ffc048; --radius:16px }
     *{box-sizing:border-box}
@@ -166,17 +167,59 @@
     </form>
   </dialog>
 
+  <!-- Modale Générateur de mail (PLACÉE HORS DU SCRIPT) -->
+  <dialog id="dlgMail">
+    <form method="dialog">
+      <div class="modal-head"><strong>Générateur de mail</strong></div>
+      <div class="modal-body">
+        <div class="grid3" style="margin-bottom:10px">
+          <div class="field">
+            <label>Type de mail</label>
+            <select id="m_kind">
+              <option value="mission">Missionnement technicien</option>
+              <option value="rdv">Confirmation de rendez-vous</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Date/heure (pré-rempli)</label>
+            <input type="text" id="m_when" readonly />
+          </div>
+          <div class="field">
+            <label>Technicien</label>
+            <input type="text" id="m_tech" readonly />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Objet</label>
+          <input type="text" id="m_subject" />
+        </div>
+        <div class="field" style="margin-top:8px">
+          <label>Corps du mail</label>
+          <textarea id="m_body" rows="16" style="width:100%"></textarea>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button id="m_copy" type="button" class="primary">Copier</button>
+        <button id="m_mailto" type="button" class="ok">Ouvrir dans le client mail</button>
+        <span style="flex:1"></span>
+        <button value="cancel">Fermer</button>
+      </div>
+    </form>
+  </dialog>
+
   <div id="toast" class="toast" style="display:none"></div>
 
   <!-- Dépendances globales -->
   <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/locale/fr.js"></script>
+  <script>dayjs.locale('fr');</script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 
   <!-- Script principal -->
   <script id="app-js">
   'use strict';
-
   (function(){
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', startApp);
@@ -191,10 +234,7 @@
       const $$ = (s,root=document)=>[...root.querySelectorAll(s)];
       const toast = (msg,ms=2500)=>{const t=$('#toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',ms)};
       const pad = n=>String(n).padStart(2,'0');
-      const escapeHtml = s =>
-        String(s || '').replace(/[&<>"']/g, c => (
-          {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]
-        ));
+      const escapeHtml = s => String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
       const toMailDate = iso=> dayjs(iso).format('DD/MM/YYYY');
 
       // ===== State (Agenda) =====
@@ -255,18 +295,18 @@
         const body=$('#eventsBody'); body.innerHTML='';
         rows.forEach(e=>{
           const tr=document.createElement('tr'); tr.className='row';
-tr.innerHTML = `
-  <td>${escapeHtml(e.ticket||'')}</td>
-  <td><strong>${e.start_time||''}</strong>${e.hno?' <span class="tag hno">HNO</span>':''}</td>
-  <td>${escapeHtml(e.site||'')}</td>
-  <td><span class="${guessBadges(e.type)}">${escapeHtml(e.type||'')}</span></td>
-  <td>${escapeHtml(e.technicien||'')}</td>
-  <td class="muted">${escapeHtml(e.notes||'')}</td>
-  <td>
-    <button data-id="${e.id}" data-act="edit" class="small">✏️</button>
-    <button data-id="${e.id}" data-act="mail" class="small" title="Générer un mail">✉️</button>
-  </td>`;
-
+          tr.innerHTML = `
+            <td>${escapeHtml(e.ticket||'')}</td>
+            <td><strong>${e.start_time||''}</strong>${e.hno?' <span class="tag hno">HNO</span>':''}</td>
+            <td>${escapeHtml(e.site||'')}</td>
+            <td><span class="${guessBadges(e.type)}">${escapeHtml(e.type||'')}</span></td>
+            <td>${escapeHtml(e.technicien||'')}</td>
+            <td class="muted">${escapeHtml(e.notes||'')}</td>
+            <td>
+              <button data-id="${e.id}" data-act="edit" class="small">✏️</button>
+              <button data-id="${e.id}" data-act="mail" class="small" title="Générer un mail">✉️</button>
+            </td>`;
+          body.appendChild(tr); // <-- IMPORTANT
         });
         $('#countLabel').textContent = `${rows.length} intervention(s)`;
         updateFilters();
@@ -276,22 +316,37 @@ tr.innerHTML = `
       function initSupabase(){
         try{
           state.supa = window.supabase.createClient(state.supaCreds.url, state.supaCreds.key, { auth:{persistSession:false} });
-          subscribeRealtime(); refreshDay();
+          subscribeRealtime();
+          refreshDay();
         }catch(err){ console.error(err); toast('Supabase non initialisé'); }
       }
       function subscribeRealtime(){
         if(!state.supa) return;
-        state.supa.channel('events-changes')
-          .on('postgres_changes',{event:'*',schema:'public',table:'events'}, payload=>{ log('Realtime: '+payload.eventType); refreshDay(); })
-          .subscribe((status)=> setLive(status==='SUBSCRIBED'));
+        const ch = state.supa.channel('events-changes')
+          .on('postgres_changes',{event:'*',schema:'public',table:'events'}, payload=>{
+            log('Realtime: '+payload.eventType);
+            refreshDay();
+          });
+
+        ch.subscribe((status)=>{
+          log('Realtime status: '+status);
+          setLive(status==='SUBSCRIBED');
+        });
       }
       async function upsertEvents(items){
         if(!state.supa) throw new Error('Supabase non configuré');
         const {data,error}=await state.supa.from('events').upsert(items,{onConflict:'event_uid'}).select();
         if(error) throw error; return data;
       }
-      async function deleteEvent(id){ const {error}=await state.supa.from('events').delete().eq('id',id); if(error) throw error; }
-      async function fetchDay(date){ if(!state.supa) return []; const {data,error}=await state.supa.from('events').select('*').eq('date',date).order('start_time',{ascending:true}); if(error) throw error; return data||[]; }
+      async function deleteEvent(id){
+        const {error}=await state.supa.from('events').delete().eq('id',id);
+        if(error) throw error;
+      }
+      async function fetchDay(date){
+        if(!state.supa) return [];
+        const {data,error}=await state.supa.from('events').select('*').eq('date',date).order('start_time',{ascending:true});
+        if(error) throw error; return data||[];
+      }
       async function fetchRange(start,end){
         if(!state.supa) return [];
         let q=state.supa.from('events').select('*');
@@ -300,7 +355,11 @@ tr.innerHTML = `
         const {data,error}=await q.order('date',{ascending:true}).order('start_time',{ascending:true});
         if(error) throw error; return data||[];
       }
-      async function refreshDay(){ if(!state.supa) return; const list=await fetchDay(state.currentDate); mergeEvents(list); }
+      async function refreshDay(){
+        if(!state.supa) return;
+        const list=await fetchDay(state.currentDate);
+        mergeEvents(list);
+      }
       function mergeEvents(list){
         list.forEach(e=>{ if(e?.technicien) state.options.techs.add(e.technicien); if(e?.type) state.options.types.add(e.type); });
         state.events = state.events.filter(e=>e.date!==state.currentDate).concat(list);
@@ -388,46 +447,6 @@ tr.innerHTML = `
         $('#f_notes').value=ev?.notes??'';
         $('#dlgEdit').showModal();
       }
-      <!-- Modale Générateur de mail -->
-<dialog id="dlgMail">
-  <form method="dialog">
-    <div class="modal-head"><strong>Générateur de mail</strong></div>
-    <div class="modal-body">
-      <div class="grid3" style="margin-bottom:10px">
-        <div class="field">
-          <label>Type de mail</label>
-          <select id="m_kind">
-            <option value="mission">Missionnement technicien</option>
-            <option value="rdv">Confirmation de rendez-vous</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Date/heure (pré-rempli)</label>
-          <input type="text" id="m_when" readonly />
-        </div>
-        <div class="field">
-          <label>Technicien</label>
-          <input type="text" id="m_tech" readonly />
-        </div>
-      </div>
-
-      <div class="field">
-        <label>Objet</label>
-        <input type="text" id="m_subject" />
-      </div>
-      <div class="field" style="margin-top:8px">
-        <label>Corps du mail</label>
-        <textarea id="m_body" rows="16" style="width:100%"></textarea>
-      </div>
-    </div>
-    <div class="modal-foot">
-      <button id="m_copy" type="button" class="primary">Copier</button>
-      <button id="m_mailto" type="button" class="ok">Ouvrir dans le client mail</button>
-      <span style="flex:1"></span>
-      <button value="cancel">Fermer</button>
-    </div>
-  </form>
-</dialog>
 
       async function openExport(){
         const data=await fetchRange(state.currentDate,state.currentDate);
@@ -442,25 +461,23 @@ tr.innerHTML = `
       function log(s){ const el=$('#log'); el.textContent=(dayjs().format('HH:mm:ss')+'  '+s+'\n')+el.textContent; }
 
       // ===== Générateur de mails =====
-function frShortDate(d){ return dayjs(d).format('DD/MM'); }
-function frFullDate(d){ return dayjs(d).format('DD/MM/YYYY'); }
-function toH(t){ return (t||'').replace(/^(\d{2}):(\d{2}).*$/,'$1H$2'); }
+      function frShortDate(d){ return dayjs(d).format('DD/MM'); }
+      function frFullDate(d){ return dayjs(d).format('DD/MM/YYYY'); }
+      function toH(t){ return (t||'').replace(/^(\d{2}):(\d{2}).*$/,'$1H$2'); }
 
-function buildMissionSubject(ev){
-  // Objet : MISSIONNEMENT PROJET MARIE BLACHERE - N° 555959 - 5485 8460 MARIE BLACHÈRE ...
-  const ticket = (ev.ticket||'').trim();
-  const site   = (ev.site||'').trim();
-  return `MISSIONNEMENT PROJET MARIE BLACHERE - N° ${ticket || '—'} - ${site || '—'}`;
-}
-function buildMissionBody(ev){
-  const nature = (ev.type||'').toLowerCase().includes('audit') ? 'Audit' : 'Travaux';
-  const date   = frFullDate(ev.date);
-  const heure  = toH(ev.start_time||'');
-  const duree  = `${state.settings.icsDuration} min`;
-  const site   = (ev.site||'').trim();
-  const notes  = (ev.notes||'').trim();
-
-  return [
+      function buildMissionSubject(ev){
+        const ticket = (ev.ticket||'').trim();
+        const site   = (ev.site||'').trim();
+        return `MISSIONNEMENT PROJET MARIE BLACHERE - N° ${ticket || '—'} - ${site || '—'}`;
+      }
+      function buildMissionBody(ev){
+        const nature = (ev.type||'').toLowerCase().includes('audit') ? 'Audit' : 'Travaux';
+        const date   = frFullDate(ev.date);
+        const heure  = toH(ev.start_time||'');
+        const duree  = `${state.settings.icsDuration} min`;
+        const site   = (ev.site||'').trim();
+        const notes  = (ev.notes||'').trim();
+        return [
 'Bonjour,',
 '',
 'Comme convenu ensemble, nous te missionnons sur le projet MARIE BLACHERE pour l\'intervention suivante :',
@@ -508,20 +525,19 @@ notes ? notes : 'Descriptif de l’intervention / Informations techniques',
 '',
 'Jonathan OTONIA',
 '01 88 61 35 79'
-  ].join('\n');
-}
+        ].join('\n');
+      }
 
-function buildRDVSubject(ev){
-  // Objet : RDV AUDIT BAIE BOUYGUES TELECOM - 5185 MARIE BLACHÈRE BRESSUIRE - BBG
-  const isAudit = (ev.type||'').toLowerCase().includes('audit');
-  const prefix = isAudit ? 'RDV AUDIT BAIE BOUYGUES TELECOM - ' : 'RDV TRAVAUX BOUYGUES TELECOM - ';
-  return prefix + (ev.site||'').trim();
-}
-function buildRDVBody(ev){
-  const site  = (ev.site||'').trim();
-  const when  = `${frShortDate(ev.date)} à ${toH(ev.start_time||'')}`;
-  const tech  = (ev.technicien||'').trim() || '—';
-  return [
+      function buildRDVSubject(ev){
+        const isAudit = (ev.type||'').toLowerCase().includes('audit');
+        const prefix = isAudit ? 'RDV AUDIT BAIE BOUYGUES TELECOM - ' : 'RDV TRAVAUX BOUYGUES TELECOM - ';
+        return prefix + (ev.site||'').trim();
+      }
+      function buildRDVBody(ev){
+        const site  = (ev.site||'').trim();
+        const when  = `${frShortDate(ev.date)} à ${toH(ev.start_time||'')}`;
+        const tech  = (ev.technicien||'').trim() || '—';
+        return [
 'Bonjour,',
 `Pour le site ${site} je peux te proposer le ${when} avec le technicien ${tech}`,
 '',
@@ -529,59 +545,50 @@ function buildRDVBody(ev){
 'Cordialement,',
 '',
 'Jonathan OTONIA'
-  ].join('\n');
-}
+        ].join('\n');
+      }
 
-function openMailDialogFor(ev){
-  // Préremplis
-  $('#m_when').value = `${frFullDate(ev.date)} ${toH(ev.start_time||'')}`;
-  $('#m_tech').value = ev.technicien||'';
+      function openMailDialogFor(ev){
+        $('#m_when').value = `${frFullDate(ev.date)} ${toH(ev.start_time||'')}`;
+        $('#m_tech').value = ev.technicien||'';
+        $('#m_kind').value = 'mission';
+        $('#m_subject').value = buildMissionSubject(ev);
+        $('#m_body').value    = buildMissionBody(ev);
 
-  // Par défaut : mission
-  $('#m_kind').value = 'mission';
-  $('#m_subject').value = buildMissionSubject(ev);
-  $('#m_body').value    = buildMissionBody(ev);
+        $('#m_kind').onchange = () => {
+          if($('#m_kind').value === 'mission'){
+            $('#m_subject').value = buildMissionSubject(ev);
+            $('#m_body').value    = buildMissionBody(ev);
+          }else{
+            $('#m_subject').value = buildRDVSubject(ev);
+            $('#m_body').value    = buildRDVBody(ev);
+          }
+        };
 
-  // Changement de modèle
-  $('#m_kind').onchange = () => {
-    if($('#m_kind').value === 'mission'){
-      $('#m_subject').value = buildMissionSubject(ev);
-      $('#m_body').value    = buildMissionBody(ev);
-    }else{
-      $('#m_subject').value = buildRDVSubject(ev);
-      $('#m_body').value    = buildRDVBody(ev);
-    }
-  };
+        $('#m_copy').onclick = () => {
+          const txt = `Objet: ${$('#m_subject').value}\n\n${$('#m_body').value}`;
+          navigator.clipboard.writeText(txt).then(()=> toast('Objet + corps copiés'));
+        };
 
-  // Copier
-  $('#m_copy').onclick = () => {
-    const txt = `Objet: ${$('#m_subject').value}\n\n${$('#m_body').value}`;
-    navigator.clipboard.writeText(txt).then(()=> toast('Objet + corps copiés'));
-  };
+        $('#m_mailto').onclick = () => {
+          const subj = encodeURIComponent($('#m_subject').value);
+          const body = encodeURIComponent($('#m_body').value);
+          window.open(`mailto:?subject=${subj}&body=${body}`, '_blank');
+        };
 
-  // Ouvrir mailto (destinataire à compléter)
-  $('#m_mailto').onclick = () => {
-    const subj = encodeURIComponent($('#m_subject').value);
-    const body = encodeURIComponent($('#m_body').value);
-    window.open(`mailto:?subject=${subj}&body=${body}`, '_blank');
-  };
-
-  $('#dlgMail').showModal();
-}
-
+        $('#dlgMail').showModal();
+      }
 
       // ======= PLANIFICATION PAGE (nouvel onglet) =======
       function openPlanificationTab(){
         const w = window.open('', '_blank');
         if(!w){ toast('Popup bloquée par le navigateur'); return; }
 
-        // 1) Base document
         const doc = w.document;
         doc.open();
         doc.write('<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Planification Techniciens — Intégrée</title></head><body></body></html>');
         doc.close();
 
-        // 2) Styles (pas de template string géant)
         const style = doc.createElement('style');
         style.textContent = `
 :root{ --bg:#0b0f14; --panel:#101823; --muted:#7a8aa1; --text:#e6edf6; --accent:#4cc2ff; --ok:#78e08f; --danger:#ff6b6b; --warn:#ffc048; --radius:16px }
@@ -620,7 +627,6 @@ button.danger{background:linear-gradient(180deg,#3d1515,#2a0e0e);border-color:#6
 `;
         doc.head.appendChild(style);
 
-        // 3) Structure HTML
         const header = doc.createElement('header');
         header.innerHTML = `
 <div class="wrap">
@@ -690,12 +696,10 @@ button.danger{background:linear-gradient(180deg,#3d1515,#2a0e0e);border-color:#6
 <div id="toast" class="toast" style="display:none"></div>`;
         doc.body.appendChild(main);
 
-        // 4) Charger XLSX (CDN)
         const xlsx = doc.createElement('script');
         xlsx.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
         doc.body.appendChild(xlsx);
 
-        // 5) Utilitaires + logique (fenêtre enfant)
         const helper = doc.createElement('script');
         helper.textContent = `
 const $ = (s,root=document)=>root.querySelector(s);
@@ -820,7 +824,6 @@ function renderTechList(){
     box.appendChild(el);
   });
 }
-
 function fillTechSelect(){
   const sel = $('#techSelect'); sel.innerHTML='';
   const list = getVisibleList();
@@ -886,13 +889,11 @@ function clearDraft(){
   localStorage.setItem('pt_draft', JSON.stringify(state.draft));
   renderSites(); toast('Brouillon vidé');
 }
-
 function openExportTab(){
   const sel = getCurrentSelection(); if(!sel.ok){ toast(sel.msg); return; }
   const key = keyFor(sel.dept, sel.tech);
   const list = (state.draft[key]||[]).map(it=> ({ dept: sel.dept, site: it.site }));
   if(!list.length){ toast('Aucun site à exporter'); return; }
-
   const rows = [['Département','Raison sociale','Date','Heure'], ...list.map(r=>[r.dept, r.site, '', ''])];
   const wb = window.XLSX.utils.book_new();
   const ws = window.XLSX.utils.aoa_to_sheet(rows);
@@ -908,11 +909,8 @@ function openExportTab(){
   a.download = \`planif_\${sel.dept}_\${safeTech}.xlsx\`;
   a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
 }
-
 function renderAfterImport(){ if(state.lastDept) $('#deptInput').value = state.lastDept; renderTechList(); fillTechSelect(); }
-
 function bindUI(){
-  // Imports fichiers
   $('#excelInternes').addEventListener('change', e=>{
     const f=e.target.files[0]; if(!f) return;
     const r=new FileReader();
@@ -921,7 +919,8 @@ function bindUI(){
         const wb=XLSX.read(ev.target.result,{type:'binary'});
         const list=parseTechExcel(wb);
         state.internes = dedupe([...(state.internes||[]), ...list]);
-        saveInternes(); toast('Internes chargés : '+state.internes.length);
+        localStorage.setItem('pt_techs_internes', JSON.stringify(state.internes));
+        toast('Internes chargés : '+state.internes.length);
         renderAfterImport();
       }catch(err){ console.error(err); toast('Erreur import Internes'); }
     };
@@ -935,37 +934,26 @@ function bindUI(){
         const wb=XLSX.read(ev.target.result,{type:'binary'});
         const list=parseTechExcel(wb);
         state.sousT = dedupe([...(state.sousT||[]), ...list]);
-        saveSousT(); toast('Sous-traitants chargés : '+state.sousT.length);
+        localStorage.setItem('pt_techs_soustraitants', JSON.stringify(state.sousT));
+        toast('Sous-traitants chargés : '+state.sousT.length);
         renderAfterImport();
       }catch(err){ console.error(err); toast('Erreur import Sous-traitants'); }
     };
     r.readAsBinaryString(f); e.target.value='';
   });
-
-  // Effacements
-  $('#btnClearInternes').addEventListener('click', ()=>{ state.internes=[]; saveInternes(); toast('Internes effacés'); renderAfterImport(); });
-  $('#btnClearSousT').addEventListener('click', ()=>{ state.sousT=[]; saveSousT(); toast('Sous-traitants effacés'); renderAfterImport(); });
-
-  // Filtrage
-  $('#deptInput').addEventListener('input', ()=>{ setLastDept($('#deptInput').value.trim().toUpperCase()); renderTechList(); fillTechSelect(); });
+  $('#btnClearInternes').addEventListener('click', ()=>{ state.internes=[]; localStorage.setItem('pt_techs_internes','[]'); toast('Internes effacés'); renderAfterImport(); });
+  $('#btnClearSousT').addEventListener('click', ()=>{ state.sousT=[]; localStorage.setItem('pt_techs_soustraitants','[]'); toast('Sous-traitants effacés'); renderAfterImport(); });
+  $('#deptInput').addEventListener('input', ()=>{ localStorage.setItem('pt_lastDept', $('#deptInput').value.trim().toUpperCase()); renderTechList(); fillTechSelect(); });
   $('#searchTech').addEventListener('input', ()=>{ renderTechList(); fillTechSelect(); });
-
-  // Sélection tech / dept
   $('#techSelect').addEventListener('change', ()=>{ $('#selTechLabel').textContent = $('#techSelect').value || '—'; renderSites(); });
   $('#deptSelected').addEventListener('input', ()=> renderSites());
   $('#btnAddSite').addEventListener('click', ()=> addSiteRow());
-
-  // Brouillon + Export
-  $('#btnSaveDraft').addEventListener('click', saveDraftFromUI);
-  $('#btnClearDraft').addEventListener('click', clearDraft);
-  $('#btnExportPlanif').addEventListener('click', openExportTab);
-
-  // Première passe
+  $('#btnSaveDraft').addEventListener('click', ()=>{ saveDraftFromUI(); });
+  $('#btnClearDraft').addEventListener('click', ()=>{ clearDraft(); });
+  $('#btnExportPlanif').addEventListener('click', ()=>{ openExportTab(); });
   if(state.lastDept) $('#deptInput').value = state.lastDept;
   renderTechList(); fillTechSelect();
 }
-
-// Attendre que XLSX soit chargé avant de binder
 (function waitX(){ if(!window.XLSX){ return setTimeout(waitX, 50); } bindUI(); })();
 `;
         doc.body.appendChild(helper);
@@ -993,16 +981,15 @@ function bindUI(){
         $('#btnSettings').addEventListener('click', openSettings);
 
         $('#eventsBody').addEventListener('click', (e) => {
-  const btn = e.target.closest('button');
-  if (!btn) return;
-  const id = btn.getAttribute('data-id');
-  const act = btn.getAttribute('data-act');
-  const ev = state.events.find((x) => x.id === id);
-  if (!ev) return;
-  if (act === 'edit') openEditor(ev);
-  if (act === 'mail') openMailDialogFor(ev);
-});
-
+          const btn = e.target.closest('button');
+          if (!btn) return;
+          const id = btn.getAttribute('data-id');
+          const act = btn.getAttribute('data-act');
+          const ev = state.events.find((x) => x.id === id);
+          if (!ev) return;
+          if (act === 'edit') openEditor(ev);
+          if (act === 'mail') openMailDialogFor(ev);
+        });
 
         $('#btnOpenPlanif').addEventListener('click', openPlanificationTab);
       }
@@ -1069,7 +1056,6 @@ function bindUI(){
 
         const uidBase = `${rec.date}|${rec.ticket.toLowerCase()}|${rec.site.toLowerCase()}|${rec.technicien.toLowerCase()}|${rec.start_time}`;
 
-        // SHA1 stable
         if (window.crypto?.subtle) {
           const enc = new TextEncoder().encode(uidBase);
           const buf = await crypto.subtle.digest('SHA-1', enc);
@@ -1086,13 +1072,11 @@ function bindUI(){
         await refreshDay();
       });
 
-      // ===== Boot sécurisé =====
+      // ===== Boot =====
       try{
         loadPrefs();
         bindUI();
         $('#datePicker').value = state.currentDate;
-        // Si Supabase non configuré, on peut quand même afficher UI (events resteront vides)
-        // render après éventuellement refreshDay
         render();
         toast("Configure Supabase (si besoin), importe l’Excel interventions. Planification via le bouton 📋");
       }catch(err){
@@ -1137,8 +1121,7 @@ function bindUI(){
   create policy if not exists "events_update_all" on public.events for update using (true) with check (true);
   create policy if not exists "events_delete_all" on public.events for delete using (true);
 
-  -- Activer Realtime sur la table events dans Supabase.
+  -- Dans le dashboard Supabase : Realtime > activer INSERT/UPDATE/DELETE sur public.events.
   -->
 </body>
 </html>
-
