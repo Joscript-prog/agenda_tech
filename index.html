@@ -255,15 +255,18 @@
         const body=$('#eventsBody'); body.innerHTML='';
         rows.forEach(e=>{
           const tr=document.createElement('tr'); tr.className='row';
-          tr.innerHTML=`
-            <td>${escapeHtml(e.ticket||'')}</td>
-            <td><strong>${e.start_time||''}</strong>${e.hno?' <span class="tag hno">HNO</span>':''}</td>
-            <td>${escapeHtml(e.site||'')}</td>
-            <td><span class="${guessBadges(e.type)}">${escapeHtml(e.type||'')}</span></td>
-            <td>${escapeHtml(e.technicien||'')}</td>
-            <td class="muted">${escapeHtml(e.notes||'')}</td>
-            <td><button data-id="${e.id}" data-act="edit" class="small">✏️</button></td>`;
-          body.appendChild(tr);
+tr.innerHTML = `
+  <td>${escapeHtml(e.ticket||'')}</td>
+  <td><strong>${e.start_time||''}</strong>${e.hno?' <span class="tag hno">HNO</span>':''}</td>
+  <td>${escapeHtml(e.site||'')}</td>
+  <td><span class="${guessBadges(e.type)}">${escapeHtml(e.type||'')}</span></td>
+  <td>${escapeHtml(e.technicien||'')}</td>
+  <td class="muted">${escapeHtml(e.notes||'')}</td>
+  <td>
+    <button data-id="${e.id}" data-act="edit" class="small">✏️</button>
+    <button data-id="${e.id}" data-act="mail" class="small" title="Générer un mail">✉️</button>
+  </td>`;
+
         });
         $('#countLabel').textContent = `${rows.length} intervention(s)`;
         updateFilters();
@@ -385,6 +388,47 @@
         $('#f_notes').value=ev?.notes??'';
         $('#dlgEdit').showModal();
       }
+      <!-- Modale Générateur de mail -->
+<dialog id="dlgMail">
+  <form method="dialog">
+    <div class="modal-head"><strong>Générateur de mail</strong></div>
+    <div class="modal-body">
+      <div class="grid3" style="margin-bottom:10px">
+        <div class="field">
+          <label>Type de mail</label>
+          <select id="m_kind">
+            <option value="mission">Missionnement technicien</option>
+            <option value="rdv">Confirmation de rendez-vous</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Date/heure (pré-rempli)</label>
+          <input type="text" id="m_when" readonly />
+        </div>
+        <div class="field">
+          <label>Technicien</label>
+          <input type="text" id="m_tech" readonly />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Objet</label>
+        <input type="text" id="m_subject" />
+      </div>
+      <div class="field" style="margin-top:8px">
+        <label>Corps du mail</label>
+        <textarea id="m_body" rows="16" style="width:100%"></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button id="m_copy" type="button" class="primary">Copier</button>
+      <button id="m_mailto" type="button" class="ok">Ouvrir dans le client mail</button>
+      <span style="flex:1"></span>
+      <button value="cancel">Fermer</button>
+    </div>
+  </form>
+</dialog>
+
       async function openExport(){
         const data=await fetchRange(state.currentDate,state.currentDate);
         const rows=data.map(e=>({Date:toMailDate(e.date),Heure:e.start_time||'', 'Type de travaux':e.type||'', 'Nom du tech':e.technicien||''}));
@@ -396,6 +440,135 @@
         toast(`Exporté ${rows.length} interventions`);
       }
       function log(s){ const el=$('#log'); el.textContent=(dayjs().format('HH:mm:ss')+'  '+s+'\n')+el.textContent; }
+
+      // ===== Générateur de mails =====
+function frShortDate(d){ return dayjs(d).format('DD/MM'); }
+function frFullDate(d){ return dayjs(d).format('DD/MM/YYYY'); }
+function toH(t){ return (t||'').replace(/^(\d{2}):(\d{2}).*$/,'$1H$2'); }
+
+function buildMissionSubject(ev){
+  // Objet : MISSIONNEMENT PROJET MARIE BLACHERE - N° 555959 - 5485 8460 MARIE BLACHÈRE ...
+  const ticket = (ev.ticket||'').trim();
+  const site   = (ev.site||'').trim();
+  return `MISSIONNEMENT PROJET MARIE BLACHERE - N° ${ticket || '—'} - ${site || '—'}`;
+}
+function buildMissionBody(ev){
+  const nature = (ev.type||'').toLowerCase().includes('audit') ? 'Audit' : 'Travaux';
+  const date   = frFullDate(ev.date);
+  const heure  = toH(ev.start_time||'');
+  const duree  = `${state.settings.icsDuration} min`;
+  const site   = (ev.site||'').trim();
+  const notes  = (ev.notes||'').trim();
+
+  return [
+'Bonjour,',
+'',
+'Comme convenu ensemble, nous te missionnons sur le projet MARIE BLACHERE pour l\'intervention suivante :',
+'',
+'Informations générales :',
+`Nature de l'intervention : ${nature}`,
+`Date d'intervention : ${date}`,
+`Heure d'intervention : ${heure}`,
+`Durée : ${duree}`,
+`Tarif : xxx€ + xxx€ de frais (à communiquer seulement au responsable administratif)`,
+`Adresse du site : `,
+`Nom du site : ${site}`,
+'',
+'Contacts :',
+'',
+'Bugbusters :',
+'Jonathan OTONIA : 01 88 61 35 79',
+'Laura GIRALDO : 06 60 81 71 55',
+'Jean-Michel SANTIAGO : 06 37 43 08 48',
+'',
+'Marie BLACHERE : 04 90 26 26 68 (à appeler en cas de retard)',
+'',
+'Informations techniques :',
+notes ? notes : 'Descriptif de l’intervention / Informations techniques',
+'',
+'Les documents techniques sont disponibles dans le ticket de l’intervention.',
+'',
+'Rapport intervention :',
+'• Rédiger le rapport d’intervention sur KIZEO avec photos horodatées',
+'• Rédiger le rapport d’intervention sur MOBILITY 4',
+'',
+'Informations importantes :',
+'• Les retards d’arrivée sur site doivent faire l’objet d’une alerte immédiate auprès de Jonathan ou Jean-Michel',
+'• Toute difficulté rencontrée sur site doit être communiquée à Jonathan ou Jean-Michel',
+'',
+'A mentionner seulement si Travaux :',
+'Logistique :',
+'Nous t’avons expédié des équipements à installer lors de la réalisation des travaux.',
+'Les informations d’expédition sont disponibles dans ton ticket MOBILITY 4.',
+'Attention, les colis ne restent que 7 jours calendaires au point relais.',
+'',
+'Nous restons disponibles si tu as la moindre question,',
+'',
+'En te remerciant,',
+'',
+'Jonathan OTONIA',
+'01 88 61 35 79'
+  ].join('\n');
+}
+
+function buildRDVSubject(ev){
+  // Objet : RDV AUDIT BAIE BOUYGUES TELECOM - 5185 MARIE BLACHÈRE BRESSUIRE - BBG
+  const isAudit = (ev.type||'').toLowerCase().includes('audit');
+  const prefix = isAudit ? 'RDV AUDIT BAIE BOUYGUES TELECOM - ' : 'RDV TRAVAUX BOUYGUES TELECOM - ';
+  return prefix + (ev.site||'').trim();
+}
+function buildRDVBody(ev){
+  const site  = (ev.site||'').trim();
+  const when  = `${frShortDate(ev.date)} à ${toH(ev.start_time||'')}`;
+  const tech  = (ev.technicien||'').trim() || '—';
+  return [
+'Bonjour,',
+`Pour le site ${site} je peux te proposer le ${when} avec le technicien ${tech}`,
+'',
+'Je te remercie par avance pour ton retour.',
+'Cordialement,',
+'',
+'Jonathan OTONIA'
+  ].join('\n');
+}
+
+function openMailDialogFor(ev){
+  // Préremplis
+  $('#m_when').value = `${frFullDate(ev.date)} ${toH(ev.start_time||'')}`;
+  $('#m_tech').value = ev.technicien||'';
+
+  // Par défaut : mission
+  $('#m_kind').value = 'mission';
+  $('#m_subject').value = buildMissionSubject(ev);
+  $('#m_body').value    = buildMissionBody(ev);
+
+  // Changement de modèle
+  $('#m_kind').onchange = () => {
+    if($('#m_kind').value === 'mission'){
+      $('#m_subject').value = buildMissionSubject(ev);
+      $('#m_body').value    = buildMissionBody(ev);
+    }else{
+      $('#m_subject').value = buildRDVSubject(ev);
+      $('#m_body').value    = buildRDVBody(ev);
+    }
+  };
+
+  // Copier
+  $('#m_copy').onclick = () => {
+    const txt = `Objet: ${$('#m_subject').value}\n\n${$('#m_body').value}`;
+    navigator.clipboard.writeText(txt).then(()=> toast('Objet + corps copiés'));
+  };
+
+  // Ouvrir mailto (destinataire à compléter)
+  $('#m_mailto').onclick = () => {
+    const subj = encodeURIComponent($('#m_subject').value);
+    const body = encodeURIComponent($('#m_body').value);
+    window.open(`mailto:?subject=${subj}&body=${body}`, '_blank');
+  };
+
+  $('#dlgMail').showModal();
+}
+
 
       // ======= PLANIFICATION PAGE (nouvel onglet) =======
       function openPlanificationTab(){
@@ -820,14 +993,16 @@ function bindUI(){
         $('#btnSettings').addEventListener('click', openSettings);
 
         $('#eventsBody').addEventListener('click', (e) => {
-          const btn = e.target.closest('button');
-          if (!btn) return;
-          const id = btn.getAttribute('data-id');
-          const act = btn.getAttribute('data-act');
-          const ev = state.events.find((x) => x.id === id);
-          if (!ev) return;
-          if (act === 'edit') openEditor(ev);
-        });
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  const id = btn.getAttribute('data-id');
+  const act = btn.getAttribute('data-act');
+  const ev = state.events.find((x) => x.id === id);
+  if (!ev) return;
+  if (act === 'edit') openEditor(ev);
+  if (act === 'mail') openMailDialogFor(ev);
+});
+
 
         $('#btnOpenPlanif').addEventListener('click', openPlanificationTab);
       }
@@ -966,3 +1141,4 @@ function bindUI(){
   -->
 </body>
 </html>
+
